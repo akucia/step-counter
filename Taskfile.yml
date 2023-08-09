@@ -1,0 +1,24 @@
+version: 3
+
+tasks:
+  list-boards:
+    cmds:
+      - arduino-cli board list
+  arduino-lib-install:
+    cmds:
+      - arduino-cli core install arduino:mbed_nano
+      - arduino-cli lib install Arduino_LSM9DS1
+      - arduino-cli lib install ArduinoBLE
+      - arduino-cli lib install Arduino_APDS9960
+  arduino-compile:
+    cmds:
+      - arduino-cli --fqbn arduino:mbed_nano:nano33ble compile -e ./arduino/Accelerometer
+    sources:
+      - ./arduino/Accelerometer/Accelerometer.ino
+    generates:
+      - ./arduino/Accelerometer/build/**/Accelerometer.ino.*
+  arduino-upload:
+    deps:
+      - arduino-compile
+    cmds:
+      - arduino-cli upload -p /dev/cu.usbmodem1413101 --fqbn arduino:mbed_nano:nano33ble ./arduino/Accelerometer
