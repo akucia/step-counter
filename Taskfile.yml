@@ -21,4 +21,4 @@ tasks:
     deps:
       - arduino-compile
     cmds:
-      - arduino-cli upload -p /dev/cu.usbmodem1413101 --fqbn arduino:mbed_nano:nano33ble ./arduino/Accelerometer
+      - arduino-cli upload -p /dev/cu.usbmodem144101 --fqbn arduino:mbed_nano:nano33ble ./arduino/Accelerometer

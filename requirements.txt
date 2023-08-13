@@ -2,3 +2,5 @@ pyserial
 matplotlib
 numpy
 drawnow
+bleak
+pandas
