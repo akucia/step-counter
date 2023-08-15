@@ -17,7 +17,14 @@ const unsigned char initializerAcc[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 void setup() {
     Serial.begin(9600);
+    pinMode(LEDR, OUTPUT);
+    pinMode(LEDG, OUTPUT);
+    pinMode(LEDB, OUTPUT);
+    pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(LEDR, HIGH);
+    digitalWrite(LEDG, HIGH);
+    digitalWrite(LEDB, HIGH);
     //    while (!Serial)
     //        ;
     Serial.println("Started");
@@ -56,6 +63,9 @@ void loop() {
 
     BLEDevice central = BLE.central();
     digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(LEDB, HIGH);
+    digitalWrite(LEDR, LOW);
+
     Serial.println("- Discovering central device...");
 
     if (central) {
@@ -63,20 +73,22 @@ void loop() {
         Serial.print("* Device MAC address: ");
         Serial.println(central.address());
         Serial.println(" ");
+        digitalWrite(LEDB, LOW);
         while (central.connected()) {
-            digitalWrite(LED_BUILTIN, HIGH);
+            digitalWrite(LEDR, HIGH);
             AccelerometerData data = getAccelerometer();
             unsigned char *acc = (unsigned char *)&data;
             int success = accelerometerCharacteristic.writeValue(acc, 12);
             if (!success) {
                 Serial.println("value not written");
             }
-            digitalWrite(LED_BUILTIN, LOW);
             delay(10);
         }
         Serial.println("* Disconnected from central device!");
+        digitalWrite(LEDR, LOW);
     }
     delay(500);
+    digitalWrite(LEDB, HIGH);
     digitalWrite(LED_BUILTIN, LOW);
     delay(200);
 }

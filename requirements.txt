@@ -1,6 +1,6 @@
 pyserial
 matplotlib
 numpy
-drawnow
 bleak
 pandas
+bokeh

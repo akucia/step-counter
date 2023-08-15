@@ -10,15 +10,30 @@ tasks:
       - arduino-cli lib install Arduino_LSM9DS1
       - arduino-cli lib install ArduinoBLE
       - arduino-cli lib install Arduino_APDS9960
-  arduino-compile:
+  arduino-accelerometer-compile:
     cmds:
       - arduino-cli --fqbn arduino:mbed_nano:nano33ble compile -e ./arduino/Accelerometer
     sources:
       - ./arduino/Accelerometer/Accelerometer.ino
     generates:
       - ./arduino/Accelerometer/build/**/Accelerometer.ino.*
-  arduino-upload:
+  arduino-accelerometer-upload:
     deps:
-      - arduino-compile
+      - arduino-accelerometer-compile
     cmds:
-      - arduino-cli upload -p /dev/cu.usbmodem144101 --fqbn arduino:mbed_nano:nano33ble ./arduino/Accelerometer
+      - arduino-cli upload -p /dev/cu.usbmodem142101 --fqbn arduino:mbed_nano:nano33ble ./arduino/Accelerometer
+  arduino-buttons-compile:
+    cmds:
+      - arduino-cli --fqbn arduino:mbed_nano:nano33ble compile -e ./arduino/Buttons
+    sources:
+      - ./arduino/Buttons/Buttons.ino
+    generates:
+      - ./arduino/Buttons/build/**/Buttons.ino.*
+  arduino-buttons-upload:
+    deps:
+      - arduino-buttons-compile
+    cmds:
+      - arduino-cli upload -p /dev/cu.usbmodem142101 --fqbn arduino:mbed_nano:nano33ble ./arduino/Buttons
+  start-live-plotting:
+    cmds:
+      - bokeh serve --show connect-and-plot.py
