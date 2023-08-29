@@ -1,0 +1,4 @@
+[core]
+    remote = cloud-storage
+['remote "cloud-storage"']
+    url = gs://step-counter-dvc
