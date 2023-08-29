@@ -37,3 +37,10 @@ tasks:
   start-live-plotting:
     cmds:
       - bokeh serve --show connect-and-plot.py
+  compile-requirements:
+    desc: Compile requirements.in to requirements.txt
+    deps:
+        - pyproject.toml
+        - requirements.in
+    cmds:
+      - pip-compile -o requirements.txt pyproject.toml

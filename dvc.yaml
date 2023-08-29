@@ -1,0 +1,14 @@
+stages:
+  train:
+    cmd: python train.py
+    deps:
+      - data/train/
+    outs:
+      - model.pkl
+  evaluate:
+    cmd: python evaluate.py
+    deps:
+      - model.pkl
+      - data/test/
+    metrics:
+      - accuracy
