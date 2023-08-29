@@ -6,14 +6,16 @@ const char *deviceServiceUuid = "96b1c8ed-fd4b-4bc3-b5da-9e3ed654f1b1";
 const char *deviceServiceCharacteristicUuid = "551de921-bbaa-4e0a-9374-3e30e88a9073";
 
 BLEService accelerometerService(deviceServiceUuid);
-BLECharacteristic accelerometerCharacteristic(deviceServiceCharacteristicUuid, BLERead | BLEWrite, 12);
+BLECharacteristic accelerometerCharacteristic(deviceServiceCharacteristicUuid, BLERead | BLEWrite, 16);
 
-union AccelerometerData {
-    float values[3];
-    unsigned char bytes[12];
+union DeviceData {
+    float values[4];
+    unsigned char bytes[16];
 };
 
-const unsigned char initializerAcc[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+const unsigned char initializerAcc[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+const int buttonPin = 2;
 
 void setup() {
     Serial.begin(9600);
@@ -21,7 +23,7 @@ void setup() {
     pinMode(LEDG, OUTPUT);
     pinMode(LEDB, OUTPUT);
     pinMode(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(LED_BUILTIN, LOW);
     digitalWrite(LEDR, HIGH);
     digitalWrite(LEDG, HIGH);
     digitalWrite(LEDB, HIGH);
@@ -41,7 +43,7 @@ void setup() {
     BLE.setAdvertisedService(accelerometerService);
     accelerometerService.addCharacteristic(accelerometerCharacteristic);
     BLE.addService(accelerometerService);
-    accelerometerCharacteristic.writeValue(initializerAcc, 12);
+    accelerometerCharacteristic.writeValue(initializerAcc, 16);
     BLE.advertise();
 
     // Set up accelerometer
@@ -62,7 +64,7 @@ void setup() {
 void loop() {
 
     BLEDevice central = BLE.central();
-    digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(LED_BUILTIN, LOW);
     digitalWrite(LEDB, HIGH);
     digitalWrite(LEDR, LOW);
 
@@ -76,9 +78,17 @@ void loop() {
         digitalWrite(LEDB, LOW);
         while (central.connected()) {
             digitalWrite(LEDR, HIGH);
-            AccelerometerData data = getAccelerometer();
+            DeviceData data = getAccelerometer();
+            bool button_pressed = buttonPressed();
+            data.values[3] = button_pressed ? 1 : 0;
+            if (button_pressed) {
+                Serial.println("button pressed");
+                digitalWrite(LED_BUILTIN, HIGH);
+            } else {
+                digitalWrite(LED_BUILTIN, LOW);
+            }
             unsigned char *acc = (unsigned char *)&data;
-            int success = accelerometerCharacteristic.writeValue(acc, 12);
+            int success = accelerometerCharacteristic.writeValue(acc, 16);
             if (!success) {
                 Serial.println("value not written");
             }
@@ -97,10 +107,9 @@ bool setValue(const unsigned char value[], unsigned short length) {
     return true;
 }
 
-AccelerometerData getAccelerometer() {
+DeviceData getAccelerometer() {
     float x = 0, y = 0, z = 0;
     if (IMU.accelerationAvailable()) {
-
         IMU.readAcceleration(x, y, z);
         Serial.print(millis());
         Serial.print('\t');
@@ -110,9 +119,14 @@ AccelerometerData getAccelerometer() {
         Serial.print('\t');
         Serial.println(z);
     }
-    union AccelerometerData data;
+    union DeviceData data;
     data.values[0] = x;
     data.values[1] = y;
     data.values[2] = z;
     return data;
+}
+
+bool buttonPressed() {
+    int buttonState = digitalRead(buttonPin);
+    return buttonState == LOW;
 }

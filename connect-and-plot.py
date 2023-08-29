@@ -1,21 +1,24 @@
 #!/usr/bin/env python
-
 import asyncio
-import time
+import sys
+from asyncio import sleep
 from concurrent.futures import ThreadPoolExecutor
+import time
+import datetime
 from functools import partial
 
+import numpy as np
+from bleak import BleakScanner, BleakClient
 from bokeh.document import without_document_lock
 from bokeh.events import ButtonClick
-from bokeh.layouts import column
+from bokeh.layouts import row, column
 from bokeh.models import ColumnDataSource, Button
 from bokeh.plotting import curdoc, figure
-import asyncio
-from datetime import time, datetime
+import queue
 
 
-import numpy as np
-from bleak import BleakScanner, BleakClient, BleakError
+# TODO add a queue to store data
+ROLLOVER = 200
 
 i = 0
 service_uuid = "551de921-bbaa-4e0a-9374-3e30e88a9073"
@@ -23,14 +26,17 @@ device_uuid = "96b1c8ed-fd4b-4bc3-b5da-9e3ed654f1b1"
 source_x = ColumnDataSource(data=dict(x=[0], y=[0]))
 source_y = ColumnDataSource(data=dict(x=[0], y=[0]))
 source_z = ColumnDataSource(data=dict(x=[0], y=[0]))
+source_b = ColumnDataSource(data=dict(x=[0], y=[0]))
 
 doc = curdoc()
 
 executor = ThreadPoolExecutor(max_workers=2)
 
+data_queue = queue.SimpleQueue()
+
 
 async def set_title(title):
-    p.title.text = title
+    p1.title.text = title
 
 
 @without_document_lock
@@ -52,24 +58,43 @@ async def discover_device():
             await read_data_from_device(device)
 
 
+def read_queue_and_save_data():
+    filename = f"accelerometer-data-{datetime.datetime.now()}.csv"
+    with open(filename, "w") as f:
+        f.write("timestamp,x,y,z,button_state\n")
+    counter = 0
+    while True:
+        try:
+            timestamp, data = data_queue.get_nowait()
+            with open(filename, "a") as f:
+                print(timestamp, *data, sep=",", file=f)
+            counter += 1
+        except queue.Empty:
+            print(f"Queue empty, read {counter} items")
+            return
+
+
 @without_document_lock
 async def read_data_from_device(device):
     async with BleakClient(device.address) as client:
         while client.is_connected:
             bytes_data = await client.read_gatt_char(service_uuid)
+            timestamp = time.time()
             decoded_data = np.frombuffer(bytes_data, dtype=np.float32)
-            print(decoded_data)
+            data_queue.put((timestamp, decoded_data))
+
             doc.add_next_tick_callback(
                 partial(
                     update,
                     x=decoded_data[0],
                     y=decoded_data[1],
                     z=decoded_data[2],
+                    button_state=decoded_data[3],
                 )
             )
 
 
-async def update(x, y, z):
+async def update(x, y, z, button_state):
     # todo find a way to get index better than global counter
     global i
     i += 1
@@ -80,30 +105,46 @@ async def update(x, y, z):
             "x": [source_x.data["x"][-1] + 1],
             "y": [x],
         },
-        rollover=100,
+        rollover=ROLLOVER,
     )
     source_y.stream(
         new_data={
             "x": [source_y.data["x"][-1] + 1],
             "y": [y],
         },
-        rollover=100,
+        rollover=ROLLOVER,
     )
     source_z.stream(
         new_data={
             "x": [source_z.data["x"][-1] + 1],
             "y": [z],
         },
-        rollover=100,
+        rollover=ROLLOVER,
+    )
+    source_b.stream(
+        new_data={
+            "x": [source_b.data["x"][-1] + 1],
+            "y": [button_state],
+        },
+        rollover=ROLLOVER,
     )
 
 
-p = figure(y_range=[-4, 4])
-p.title.text = "..."
-lx = p.line(x="x", y="y", source=source_x, color="red")
-ly = p.line(x="x", y="y", source=source_y, color="green")
-lz = p.line(x="x", y="y", source=source_z, color="blue")
+p1 = figure(y_range=[-4, 4])
+p1.title.text = "..."
+lx = p1.line(x="x", y="y", source=source_x, color="red")
+ly = p1.line(x="x", y="y", source=source_y, color="green")
+lz = p1.line(x="x", y="y", source=source_z, color="blue")
 
-doc.add_root(p)
+p2 = figure(y_range=[-0.1, 1.5])
+
+lb = p2.line(x="x", y="y", source=source_b, color="blue")
+
+button = Button(label="Save data to file")
+
+button.on_event(ButtonClick, read_queue_and_save_data)
+
+doc.add_root(column(row(p1, p2), button))
 doc.add_next_tick_callback(discover_device)
+
 # TODO add button to start recording to file

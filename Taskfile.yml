@@ -21,7 +21,7 @@ tasks:
     deps:
       - arduino-accelerometer-compile
     cmds:
-      - arduino-cli upload -p /dev/cu.usbmodem142101 --fqbn arduino:mbed_nano:nano33ble ./arduino/Accelerometer
+      - arduino-cli upload -p /dev/cu.usbmodem141101 --fqbn arduino:mbed_nano:nano33ble ./arduino/Accelerometer
   arduino-buttons-compile:
     cmds:
       - arduino-cli --fqbn arduino:mbed_nano:nano33ble compile -e ./arduino/Buttons
@@ -33,7 +33,7 @@ tasks:
     deps:
       - arduino-buttons-compile
     cmds:
-      - arduino-cli upload -p /dev/cu.usbmodem142101 --fqbn arduino:mbed_nano:nano33ble ./arduino/Buttons
+      - arduino-cli upload -p /dev/cu.usbmodem141101 --fqbn arduino:mbed_nano:nano33ble ./arduino/Buttons
   start-live-plotting:
     cmds:
       - bokeh serve --show connect-and-plot.py
