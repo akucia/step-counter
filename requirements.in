@@ -4,3 +4,5 @@ numpy
 bleak
 pandas
 bokeh
+pytest
+scikit-learn

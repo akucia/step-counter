@@ -4,11 +4,9 @@ stages:
     deps:
       - data/train/
     outs:
-      - model.pkl
+      - models/model.pkl
   evaluate:
     cmd: python evaluate.py
     deps:
-      - model.pkl
+      - models/model.pkl
       - data/test/
-    metrics:
-      - accuracy

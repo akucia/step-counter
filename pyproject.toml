@@ -40,3 +40,27 @@ dependencies = { file = ["requirements.in"] }
 # https://pip.pypa.io/en/stable/reference/pip/#pep-517-and-518-support
 requires = ["setuptools>=43.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = false
+ignore-magic = true
+ignore-semiprivate = false
+ignore-private = true
+ignore-property-decorators = false
+ignore-module = false
+ignore-nested-functions = true
+ignore-nested-classes = true
+ignore-setters = false
+fail-under = 80
+exclude = ["setup.py", "docs", "build"]
+ignore-regex = ["^get$", "^mock_.*", ".*BaseClass.*"]
+# possible values: 0 (minimal output), 1 (-v), 2 (-vv)
+verbose = 0
+quiet = false
+whitelist-regex = []
+color = true
+omit-covered-files = false
+generate-badge = "."
+badge-format = "svg"
