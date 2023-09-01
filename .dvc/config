@@ -1,4 +1,5 @@
 [core]
     remote = cloud-storage
+    autostage = true
 ['remote "cloud-storage"']
     url = gs://step-counter-dvc
