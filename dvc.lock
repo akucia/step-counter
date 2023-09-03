@@ -1,8 +1,8 @@
 schema: '2.0'
 stages:
   train:
-    cmd: "python  src/step_counter/train/logistic_regression.py  data/steps/train/\
-      \  models/logistic_regression.joblib --seed=42\n"
+    cmd: "python src/step_counter/models/random/train.py data/steps/train/ models/random.joblib
+      reports/metrics/train.json --seed=42\n"
     deps:
     - path: data/steps/train/
       hash: md5
@@ -13,7 +13,42 @@ stages:
       params.yaml:
         seed: 42
     outs:
-    - path: models/logistic_regression.joblib
+    - path: models/random.joblib
       hash: md5
-      md5: f97b836eb140f9a6259f2cd24f01e2ed
-      size: 1422
+      md5: 8292dbf55ba31216d07793f0fe786511
+      size: 256667
+    - path: reports/metrics/train.json
+      hash: md5
+      md5: 1c25ab42188478a254ea3d5c56e13602
+      size: 315
+  predict_test:
+    cmd: "python src/step_counter/models/random/predict.py data/steps/test/ models/random.joblib
+      reports/predictions/steps/test/\n"
+    deps:
+    - path: data/steps/test/
+      hash: md5
+      md5: e41627376916bd57e199b4dcd3daa0e0.dir
+      size: 88386
+      nfiles: 5
+    - path: models/random.joblib
+      hash: md5
+      md5: 8292dbf55ba31216d07793f0fe786511
+      size: 256667
+    outs:
+    - path: reports/predictions/steps/test/
+      hash: md5
+      md5: bb562aeff4b40712a301ba217022faea.dir
+      size: 114914
+      nfiles: 2
+  update-metrics:
+    cmd: python update-metrics-table-and-graph.py
+    deps:
+    - path: reports
+      hash: md5
+      md5: fc9c2e418cad8851671aa7db8a4fab9c.dir
+      size: 115247
+      nfiles: 5
+    - path: update-metrics-table-and-graph.py
+      hash: md5
+      md5: bdcbd5cc17e4ec0af06246f54e71a311
+      size: 1344

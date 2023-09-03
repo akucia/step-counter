@@ -2,22 +2,42 @@ stages:
   train:
     cmd: >
       python
-      src/step_counter/train/logistic_regression.py
+      src/step_counter/models/random/train.py
       data/steps/train/
-      models/logistic_regression.joblib
+      models/random.joblib
+      reports/metrics/train.json
       --seed=${seed}
     deps:
       - data/steps/train/
     outs:
-      - models/logistic_regression.joblib
+      - models/random.joblib
+    metrics:
+      - reports/metrics/train.json
     params:
       - seed
-#  evaluate:
-#    cmd: >
-#      python
-#      src/step_counter/evaluate.py
-#      data/steps/test/
-#      models/logistic_regression.joblib
-#    deps:
-#      - data/steps/test/
-#      - models/logistic_regression.joblib
+  predict_test:
+    cmd: >
+      python
+      src/step_counter/models/random/predict.py
+      data/steps/test/
+      models/random.joblib
+      reports/predictions/steps/test/
+    deps:
+      - data/steps/test/
+      - models/random.joblib
+    outs:
+      - reports/predictions/steps/test/
+  #  evaluate:
+  #    cmd: >
+  #      python
+  #      src/step_counter/evaluate.py
+  #      data/steps/test/
+  #      models/logistic_regression.joblib
+  #    deps:
+  #      - data/steps/test/
+  #      - models/logistic_regression.joblib
+  update-metrics:
+    cmd: python update-metrics-table-and-graph.py
+    deps:
+      - update-metrics-table-and-graph.py
+      - reports
