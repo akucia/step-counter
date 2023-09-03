@@ -1,12 +1,23 @@
 stages:
   train:
-    cmd: python train.py
+    cmd: >
+      python
+      src/step_counter/train/logistic_regression.py
+      data/steps/train/
+      models/logistic_regression.joblib
+      --seed=${seed}
     deps:
-      - data/train/
+      - data/steps/train/
     outs:
-      - models/model.pkl
-  evaluate:
-    cmd: python evaluate.py
-    deps:
-      - models/model.pkl
-      - data/test/
+      - models/logistic_regression.joblib
+    params:
+      - seed
+#  evaluate:
+#    cmd: >
+#      python
+#      src/step_counter/evaluate.py
+#      data/steps/test/
+#      models/logistic_regression.joblib
+#    deps:
+#      - data/steps/test/
+#      - models/logistic_regression.joblib

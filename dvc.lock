@@ -1,0 +1,19 @@
+schema: '2.0'
+stages:
+  train:
+    cmd: "python  src/step_counter/train/logistic_regression.py  data/steps/train/\
+      \  models/logistic_regression.joblib --seed=42\n"
+    deps:
+    - path: data/steps/train/
+      hash: md5
+      md5: a8bbd12b6bc4d125570006caf62f6e67.dir
+      size: 440023
+      nfiles: 17
+    params:
+      params.yaml:
+        seed: 42
+    outs:
+    - path: models/logistic_regression.joblib
+      hash: md5
+      md5: f97b836eb140f9a6259f2cd24f01e2ed
+      size: 1422

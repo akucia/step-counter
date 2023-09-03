@@ -6,3 +6,4 @@ pandas
 bokeh
 pytest
 scikit-learn
+click
