@@ -14,6 +14,8 @@ contourpy==1.1.0
     # via
     #   bokeh
     #   matplotlib
+coverage[toml]==7.3.0
+    # via pytest-cov
 cycler==0.11.0
     # via matplotlib
 fonttools==4.42.1
@@ -77,6 +79,10 @@ pyparsing==3.0.9
 pyserial==3.5
     # via step-counter (pyproject.toml)
 pytest==7.4.0
+    # via
+    #   pytest-cov
+    #   step-counter (pyproject.toml)
+pytest-cov==4.1.0
     # via step-counter (pyproject.toml)
 python-dateutil==2.8.2
     # via

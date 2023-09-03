@@ -5,6 +5,7 @@ bleak
 pandas
 bokeh
 pytest
+pytest-cov
 scikit-learn
 click
 rich

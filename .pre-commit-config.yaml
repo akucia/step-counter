@@ -49,3 +49,21 @@ repos:
         language_version: python3
         stages:
           - post-checkout
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        stages: [ commit ]
+        language: system
+        entry: pytest -s -v src/
+        types: [ python ]
+        pass_filenames: false
+        always_run: true
+      - id: pytest-cov
+        name: pytest-cov
+        stages: [ push ]
+        language: system
+        entry: pytest -v --cov-fail-under=0 --cov-report=term-missing src/
+        types: [ python ]
+        pass_filenames: false
+        always_run: true

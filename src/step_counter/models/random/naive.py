@@ -49,7 +49,8 @@ class RandomStepClassifier(BaseEstimator, ClassifierMixin):
 
         """
         y_pred = self.predict_proba(X)
-        return np.argmax(y_pred, axis=1)
+        class_idx = np.argmax(y_pred, axis=1)
+        return np.array([self.classes_[idx] for idx in class_idx])
 
     def predict_proba(self, X):
         """
@@ -70,7 +71,14 @@ class RandomStepClassifier(BaseEstimator, ClassifierMixin):
                 f"features ({self.n_features_in_}), got {input_features}"
             )
         self.random_state_.seed(self.seed)
-        return self.random_state_.uniform(size=(X.shape[0], len(self.classes_)))
+        random_result = self.random_state_.uniform(
+            size=(X.shape[0], len(self.classes_))
+        )
+        # normalize to sum to 1
+        normalized_random_result = random_result / np.sum(
+            random_result, axis=1, keepdims=True
+        )
+        return normalized_random_result
 
     def _more_tags(self):
         return {"poor_score": True, "non_deterministic": True}
