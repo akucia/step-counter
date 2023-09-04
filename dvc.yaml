@@ -36,10 +36,19 @@ stages:
       reports/figures/
       reports/metrics/
     plots:
-      - reports/figures/confusion_matrix.png
-      - reports/figures/confusion_matrix_normalized.png
-      - reports/figures/roc_curve.png
-      - reports/figures/precision_recall_curve.png
+      - reports/figures/confusion_matrix.csv:
+          title: Confusion Matrix (Normalized)
+          template: confusion_normalized
+          x: actual
+          y: predicted
+      - reports/figures/precision_recall_curve.csv:
+          title: Precision-Recall Curve
+          x: recall
+          y: precision
+      - reports/figures/roc_curve.csv:
+          title: ROC Curve
+          x: fpr
+          y: tpr
     metrics:
       - reports/metrics/test.json
     deps:
@@ -49,3 +58,9 @@ stages:
     deps:
       - update-metrics-table-and-graph.py
       - reports
+plots:
+    - reports/figures/confusion_matrix.csv:
+        title: Confusion Matrix (Absolute)
+        template: confusion
+        x: actual
+        y: predicted

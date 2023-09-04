@@ -5,14 +5,11 @@ import json
 from pathlib import Path
 
 import click
-from matplotlib import pyplot as plt
 from sklearn.metrics import (
-    ConfusionMatrixDisplay,
-    PrecisionRecallDisplay,
-    RocCurveDisplay,
+    auc,
     classification_report,
-    confusion_matrix,
     precision_recall_curve,
+    roc_curve,
 )
 
 from step_counter.datasets import load_data_as_dataframe
@@ -48,39 +45,42 @@ def main(
     print("Running evaluation...")
     labels = ["no-step", "step"]
 
-    # TODO evaluate predictions with binary classification metrics
+    with open(figures_dir / "confusion_matrix.csv", "w") as f:
+        print("actual,predicted", file=f)
+        for actual, predicted in zip(y.astype(int), y_pred.astype(int)):
+            print(f"{labels[actual]},{labels[predicted]}", file=f)
+
+    precision, recall, thresholds = precision_recall_curve(y, y_scores)
+
+    with open(figures_dir / "precision_recall_curve.csv", "w") as f:
+        print("precision,recall,threshold", file=f)
+        for p, r, t in zip(precision, recall, thresholds):
+            print(f"{p},{r},{t}", file=f)
+
+    fpr, tpr, thresholds = roc_curve(
+        y,
+        y_scores,
+    )
+    with open(figures_dir / "roc_curve.csv", "w") as f:
+        print("fpr,tpr,threshold", file=f)
+        for fp, tp, t in zip(fpr, tpr, thresholds):
+            print(f"{fp},{tp},{t}", file=f)
+
+    roc_auc = auc(fpr, tpr)
+    print(f"ROC AUC: {roc_auc}")
+
     cls_report = classification_report(y, y_pred, target_names=labels)
     print(cls_report)
     cls_report_dict = classification_report(
         y, y_pred, target_names=labels, output_dict=True
     )
+
     metrics = {
         "test": {f"{k}_macro": v for k, v in cls_report_dict["macro avg"].items()},
     }
+    metrics["test"]["roc_auc"] = roc_auc
     with open(reports_dir / "test.json", "w") as f:
         json.dump(metrics, f, indent=2)
-
-    # TODO plot confusion matrix
-    cm = confusion_matrix(y, y_pred)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
-    disp.plot()
-    # save plot
-    plt.savefig(figures_dir / "confusion_matrix.png", bbox_inches="tight")
-
-    cm_norm = confusion_matrix(y, y_pred, normalize="true")
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm_norm, display_labels=labels)
-    disp.plot()
-    # save plot
-    plt.savefig(figures_dir / "confusion_matrix_normalized.png", bbox_inches="tight")
-
-    roc_display = RocCurveDisplay.from_predictions(y, y_scores)
-    roc_display.plot()
-    plt.savefig(figures_dir / "roc_curve.png", bbox_inches="tight")
-
-    precision, recall, _ = precision_recall_curve(y, y_scores)
-    pr_disp = PrecisionRecallDisplay(precision=precision, recall=recall)
-    pr_disp.plot()
-    plt.savefig(figures_dir / "precision_recall_curve.png", bbox_inches="tight")
 
 
 if __name__ == "__main__":

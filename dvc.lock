@@ -45,9 +45,9 @@ stages:
     deps:
     - path: reports
       hash: md5
-      md5: e3b1fecd4c919d5daeaaaae56de986b1.dir
-      size: 204235
-      nfiles: 11
+      md5: 441cd608a7c0fa5209f8e3321bf23d11.dir
+      size: 254814
+      nfiles: 10
     - path: update-metrics-table-and-graph.py
       hash: md5
       md5: 3f0edb1fc9ee7c161c5f0e8a58cfbbb7
@@ -62,23 +62,19 @@ stages:
       size: 88024
       nfiles: 2
     outs:
-    - path: reports/figures/confusion_matrix.png
+    - path: reports/figures/confusion_matrix.csv
       hash: md5
-      md5: bcd3ebcefa4835ef74bd3c8f9f6cb570
-      size: 19362
-    - path: reports/figures/confusion_matrix_normalized.png
+      md5: 829a92b36785a199966c0e15a970e1a4
+      size: 22350
+    - path: reports/figures/precision_recall_curve.csv
       hash: md5
-      md5: d0f0760bb4c86c051f3bea6be57b0b6d
-      size: 21313
-    - path: reports/figures/precision_recall_curve.png
+      md5: fb8c314acbded4b1921d876c351ad561
+      size: 73541
+    - path: reports/figures/roc_curve.csv
       hash: md5
-      md5: 21e54a0ba1417eb0d533becabd9329e4
-      size: 15838
-    - path: reports/figures/roc_curve.png
-      hash: md5
-      md5: 467dd9b7e08181583220d5b70bfcf710
-      size: 29266
+      md5: ab09a79e474dc230bcc6ed7d7aa8fbce
+      size: 40465
     - path: reports/metrics/test.json
       hash: md5
-      md5: efffe648ab5f732fecd664ebfc8050ad
-      size: 169
+      md5: 1ed09bc8585c212ef528640e3ee29f88
+      size: 204

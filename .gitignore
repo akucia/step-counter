@@ -348,3 +348,4 @@ cython_debug/
 #.idea/
 .task/
 .python-version
+/dvc_plots/
