@@ -27,9 +27,9 @@ stages:
     deps:
     - path: data/steps/test/
       hash: md5
-      md5: e41627376916bd57e199b4dcd3daa0e0.dir
-      size: 88386
-      nfiles: 5
+      md5: 74bf42681c55e319ec6fb42c98ea9f74.dir
+      size: 88024
+      nfiles: 2
     - path: models/random.joblib
       hash: md5
       md5: 8292dbf55ba31216d07793f0fe786511
@@ -57,6 +57,6 @@ stages:
     deps:
     - path: data/steps/test/
       hash: md5
-      md5: e41627376916bd57e199b4dcd3daa0e0.dir
-      size: 88386
-      nfiles: 5
+      md5: 74bf42681c55e319ec6fb42c98ea9f74.dir
+      size: 88024
+      nfiles: 2
