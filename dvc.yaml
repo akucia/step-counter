@@ -31,7 +31,17 @@ stages:
     cmd: >
       python
       src/step_counter/evaluate.py
+      data/steps/test/
       reports/predictions/steps/test/
+      reports/figures/
+      reports/metrics/
+    plots:
+      - reports/figures/confusion_matrix.png
+      - reports/figures/confusion_matrix_normalized.png
+      - reports/figures/roc_curve.png
+      - reports/figures/precision_recall_curve.png
+    metrics:
+      - reports/metrics/test.json
     deps:
       - data/steps/test/
   update-metrics:
