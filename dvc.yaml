@@ -27,15 +27,13 @@ stages:
       - models/random.joblib
     outs:
       - reports/predictions/steps/test/
-  #  evaluate:
-  #    cmd: >
-  #      python
-  #      src/step_counter/evaluate.py
-  #      data/steps/test/
-  #      models/logistic_regression.joblib
-  #    deps:
-  #      - data/steps/test/
-  #      - models/logistic_regression.joblib
+  evaluate:
+    cmd: >
+      python
+      src/step_counter/evaluate.py
+      reports/predictions/steps/test/
+    deps:
+      - data/steps/test/
   update-metrics:
     cmd: python update-metrics-table-and-graph.py
     deps:

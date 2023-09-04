@@ -37,18 +37,26 @@ stages:
     outs:
     - path: reports/predictions/steps/test/
       hash: md5
-      md5: bb562aeff4b40712a301ba217022faea.dir
-      size: 114914
+      md5: b274791fc41dc6643d81524773ea38ed.dir
+      size: 117845
       nfiles: 2
   update-metrics:
     cmd: python update-metrics-table-and-graph.py
     deps:
     - path: reports
       hash: md5
-      md5: fc9c2e418cad8851671aa7db8a4fab9c.dir
-      size: 115247
+      md5: 7160070fb913c700c5ed1c7bd1f7ea06.dir
+      size: 118178
       nfiles: 5
     - path: update-metrics-table-and-graph.py
       hash: md5
-      md5: bdcbd5cc17e4ec0af06246f54e71a311
+      md5: 3f0edb1fc9ee7c161c5f0e8a58cfbbb7
       size: 1344
+  evaluate:
+    cmd: "python src/step_counter/evaluate.py reports/predictions/steps/test/\n"
+    deps:
+    - path: data/steps/test/
+      hash: md5
+      md5: e41627376916bd57e199b4dcd3daa0e0.dir
+      size: 88386
+      nfiles: 5

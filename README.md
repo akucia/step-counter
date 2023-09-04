@@ -23,21 +23,24 @@ flowchart TD
 	node8["data/steps/train/accelerometer-data-2023-09-01 07:56:40.404358.csv.dvc"]
 	node9["data/steps/train/accelerometer-data-2023-09-01 07:56:53.696869.csv.dvc"]
 	node10["data/steps/train/accelerometer-data-2023-09-01 08:01:10.489035.csv.dvc"]
-	node11["predict_test"]
-	node12["train"]
-	node13["update-metrics"]
+	node11["evaluate"]
+	node12["predict_test"]
+	node13["train"]
+	node14["update-metrics"]
 	node1-->node11
+	node1-->node12
 	node2-->node11
-	node3-->node12
-	node4-->node12
-	node5-->node12
-	node6-->node12
-	node7-->node12
-	node8-->node12
-	node9-->node12
-	node10-->node12
-	node11-->node13
-	node12-->node11
-	node12-->node13
+	node2-->node12
+	node3-->node13
+	node4-->node13
+	node5-->node13
+	node6-->node13
+	node7-->node13
+	node8-->node13
+	node9-->node13
+	node10-->node13
+	node12-->node14
+	node13-->node12
+	node13-->node14
 ```
 _graph_end_
