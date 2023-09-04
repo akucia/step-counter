@@ -8,8 +8,8 @@
 # Metrics
 | Path                       | test.f1-score_macro   | test.precision_macro   | test.recall_macro   | test.roc_auc   | test.support_macro   | train.f1_macro   | train.precision_macro   | train.recall_macro   | validation.f1_macro   | validation.precision_macro   | validation.recall_macro   |
 |----------------------------|-----------------------|------------------------|---------------------|----------------|----------------------|------------------|-------------------------|----------------------|-----------------------|------------------------------|---------------------------|
-| reports/metrics/train.json | -                     | -                      | -                   | -              | -                    | 0.43             | 0.5                     | 0.49                 | 0.42                  | 0.49                         | 0.49                      |
-| reports/metrics/test.json  | 0.41                  | 0.49                   | 0.49                | 0.52           | 1585.0               | -                | -                       | -                    | -                     | -                            | -                         |
+| reports/metrics/train.json | -                     | -                      | -                   | -              | -                    | 0.56             | 0.58                    | 0.64                 | 0.55                  | 0.58                         | 0.64                      |
+| reports/metrics/test.json  | 0.52                  | 0.57                   | 0.66                | 0.75           | 1585.0               | -                | -                       | -                    | -                     | -                            | -                         |
 
 # Steps Graph
 ```mermaid
@@ -24,6 +24,7 @@ flowchart TD
 	node1-->node4
 	node2-->node5
 	node3-->node6
+	node4-->node3
 	node4-->node6
 	node5-->node4
 	node5-->node6

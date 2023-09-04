@@ -1,8 +1,8 @@
 schema: '2.0'
 stages:
   train:
-    cmd: "python src/step_counter/models/random/train.py data/steps/train/ models/random.joblib
-      reports/metrics/train.json --seed=42\n"
+    cmd: "python src/step_counter/models/logistic_regression/train.py data/steps/train/
+      models/logistic_regression.joblib reports/metrics/train.json --seed=42\n"
     deps:
     - path: data/steps/train/
       hash: md5
@@ -13,40 +13,40 @@ stages:
       params.yaml:
         seed: 42
     outs:
-    - path: models/random.joblib
+    - path: models/logistic_regression.joblib
       hash: md5
-      md5: 8292dbf55ba31216d07793f0fe786511
-      size: 256667
+      md5: f97b836eb140f9a6259f2cd24f01e2ed
+      size: 1422
     - path: reports/metrics/train.json
       hash: md5
-      md5: 1c25ab42188478a254ea3d5c56e13602
-      size: 315
+      md5: dc39c6d069919fe8719728b8f5704c25
+      size: 310
   predict_test:
-    cmd: "python src/step_counter/models/random/predict.py data/steps/test/ models/random.joblib
-      reports/predictions/steps/test/\n"
+    cmd: "python src/step_counter/models/logistic_regression/predict.py data/steps/test/
+      models/logistic_regression.joblib reports/predictions/steps/test/\n"
     deps:
     - path: data/steps/test/
       hash: md5
       md5: 74bf42681c55e319ec6fb42c98ea9f74.dir
       size: 88024
       nfiles: 2
-    - path: models/random.joblib
+    - path: models/logistic_regression.joblib
       hash: md5
-      md5: 8292dbf55ba31216d07793f0fe786511
-      size: 256667
+      md5: f97b836eb140f9a6259f2cd24f01e2ed
+      size: 1422
     outs:
     - path: reports/predictions/steps/test/
       hash: md5
-      md5: b274791fc41dc6643d81524773ea38ed.dir
-      size: 117845
+      md5: 42907413293a2e2d213e20abc08d6b62.dir
+      size: 117866
       nfiles: 2
   update-metrics:
     cmd: python update-metrics-table-and-graph.py
     deps:
     - path: reports
       hash: md5
-      md5: 441cd608a7c0fa5209f8e3321bf23d11.dir
-      size: 254814
+      md5: 1378bf97199c5630da87f1a7c89aec9d.dir
+      size: 248580
       nfiles: 10
     - path: update-metrics-table-and-graph.py
       hash: md5
@@ -61,20 +61,25 @@ stages:
       md5: 74bf42681c55e319ec6fb42c98ea9f74.dir
       size: 88024
       nfiles: 2
+    - path: reports/predictions/steps/test/
+      hash: md5
+      md5: 42907413293a2e2d213e20abc08d6b62.dir
+      size: 117866
+      nfiles: 2
     outs:
     - path: reports/figures/confusion_matrix.csv
       hash: md5
-      md5: 829a92b36785a199966c0e15a970e1a4
-      size: 22350
+      md5: f81a99714559941c46c8dc18569892dc
+      size: 22614
     - path: reports/figures/precision_recall_curve.csv
       hash: md5
-      md5: fb8c314acbded4b1921d876c351ad561
-      size: 73541
+      md5: fc87537bc5cbfdb86ea44f749d6e16c4
+      size: 90008
     - path: reports/figures/roc_curve.csv
       hash: md5
-      md5: ab09a79e474dc230bcc6ed7d7aa8fbce
-      size: 40465
+      md5: 3e0b5d6018700247cfaae27a40c5eeea
+      size: 17482
     - path: reports/metrics/test.json
       hash: md5
-      md5: 1ed09bc8585c212ef528640e3ee29f88
-      size: 204
+      md5: da11dcdbb4c57e0a33090761f3559b71
+      size: 206
