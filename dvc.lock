@@ -6,9 +6,9 @@ stages:
     deps:
     - path: data/steps/train/
       hash: md5
-      md5: a8bbd12b6bc4d125570006caf62f6e67.dir
-      size: 440023
-      nfiles: 17
+      md5: 137744f44fec19f884dd6eced9225b0a.dir
+      size: 438586
+      nfiles: 8
     params:
       params.yaml:
         seed: 42
