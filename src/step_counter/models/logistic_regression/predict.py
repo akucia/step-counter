@@ -1,9 +1,10 @@
 from pathlib import Path
 
 import click
-import pandas as pd
 from joblib import load
 from sklearn.pipeline import Pipeline
+
+from step_counter.datasets import load_data_as_dataframe
 
 
 @click.command()
@@ -34,8 +35,8 @@ def main(
 
     for file in data_path.glob("*.csv"):
         print(f"Predicting on file: {file}")
-        df = pd.read_csv(file)
-        X = df[["x", "y", "z"]].values
+        df = load_data_as_dataframe(file.parent, glob_pattern=file.name)
+        X = df[["x", "y", "z", "magnitude"]].values
         y_pred = model.predict(X)
         df["button_state"] = y_pred
         df["score"] = model.predict_proba(X).max(axis=1)

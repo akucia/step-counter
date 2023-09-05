@@ -44,7 +44,7 @@ def main(
     # load data
     data = load_data_as_dataframe(data_path)
 
-    X = data[["x", "y", "z"]].values
+    X = data[["x", "y", "z", "magnitude"]].values
     y = data["button_state"].values
     model = make_pipeline(
         preprocessing.StandardScaler(),
