@@ -45,8 +45,8 @@ stages:
     deps:
     - path: reports
       hash: md5
-      md5: d022dd70a600fb434eb815339cd08a75.dir
-      size: 279903
+      md5: 77e814e369ce4c8451abd432a0fcdb14.dir
+      size: 279931
       nfiles: 10
     - path: update-metrics-table-and-graph.py
       hash: md5
@@ -81,5 +81,5 @@ stages:
       size: 17358
     - path: reports/metrics/test.json
       hash: md5
-      md5: 96f82dd005d42f16f1d3846b21cc92e5
-      size: 207
+      md5: ec66d19842d191a14011262e4596ddf9
+      size: 235

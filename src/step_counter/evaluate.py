@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 import click
+import numpy as np
 from sklearn.metrics import (
     auc,
     classification_report,
@@ -13,6 +14,15 @@ from sklearn.metrics import (
 )
 
 from step_counter.datasets import load_data_as_dataframe
+
+
+def count_steps(button_state: np.ndarray) -> int:
+    """Count the number of steps in a button state array."""
+    # convolve with [-1, 1] to find edges
+    kernel = np.array([-1, 1])
+    convolved_bs = np.convolve(button_state, kernel, mode="same")
+    # count the number of positive edges
+    return np.equal(convolved_bs, 1).sum()
 
 
 @click.command()
@@ -79,6 +89,29 @@ def main(
         "test": {f"{k}_macro": v for k, v in cls_report_dict["macro avg"].items()},
     }
     metrics["test"]["roc_auc"] = roc_auc
+
+    target_steps_per_file = {}
+    for file in targets_path.glob("*.csv"):
+        target_data = load_data_as_dataframe(file.parent, glob_pattern=file.name)
+        button_clicks = target_data["button_state"].values
+        steps = count_steps(button_clicks)
+        target_steps_per_file[file.name] = steps
+
+    predicted_steps_per_file = {}
+    for file in predictions_path.glob("*.csv"):
+        predictions_data = load_data_as_dataframe(file.parent, glob_pattern=file.name)
+        y_pred = predictions_data["button_state"].values
+        steps = count_steps(y_pred)
+        predicted_steps_per_file[file.name] = steps
+
+    # calculate mae for steps
+    mae = 0
+    for file in target_steps_per_file.keys():
+        mae += abs(target_steps_per_file[file] - predicted_steps_per_file[file])
+    mae /= len(target_steps_per_file.keys())
+    print(f"Step Count MAE: {mae}")
+    metrics["test"]["step_count_mae"] = mae
+
     with open(reports_dir / "test.json", "w") as f:
         json.dump(metrics, f, indent=2)
 

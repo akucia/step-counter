@@ -6,10 +6,10 @@
 </p>
 
 # Metrics
-| Path                       | test.f1-score_macro   | test.precision_macro   | test.recall_macro   | test.roc_auc   | test.support_macro   | train.f1_macro   | train.precision_macro   | train.recall_macro   | validation.f1_macro   | validation.precision_macro   | validation.recall_macro   |
-|----------------------------|-----------------------|------------------------|---------------------|----------------|----------------------|------------------|-------------------------|----------------------|-----------------------|------------------------------|---------------------------|
-| reports/metrics/train.json | -                     | -                      | -                   | -              | -                    | 0.7              | 0.68                    | 0.75                 | 0.69                  | 0.68                         | 0.74                      |
-| reports/metrics/test.json  | 0.72                  | 0.7                    | 0.77                | 0.62           | 1585.0               | -                | -                       | -                    | -                     | -                            | -                         |
+| Path                       | test.f1-score_macro   | test.precision_macro   | test.recall_macro   | test.roc_auc   | test.step_count_mae   | test.support_macro   | train.f1_macro   | train.precision_macro   | train.recall_macro   | validation.f1_macro   | validation.precision_macro   | validation.recall_macro   |
+|----------------------------|-----------------------|------------------------|---------------------|----------------|-----------------------|----------------------|------------------|-------------------------|----------------------|-----------------------|------------------------------|---------------------------|
+| reports/metrics/train.json | -                     | -                      | -                   | -              | -                     | -                    | 0.7              | 0.68                    | 0.75                 | 0.69                  | 0.68                         | 0.74                      |
+| reports/metrics/test.json  | 0.72                  | 0.7                    | 0.77                | 0.62           | 19.5                  | 1585.0               | -                | -                       | -                    | -                     | -                            | -                         |
 
 # Steps Graph
 ```mermaid
