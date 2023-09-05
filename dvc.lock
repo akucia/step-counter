@@ -15,11 +15,11 @@ stages:
     outs:
     - path: models/logistic_regression.joblib
       hash: md5
-      md5: f97b836eb140f9a6259f2cd24f01e2ed
-      size: 1422
+      md5: 6d820e68d576390e724ae34c3b745d21
+      size: 1470
     - path: reports/metrics/train.json
       hash: md5
-      md5: dc39c6d069919fe8719728b8f5704c25
+      md5: fca9c6b69c47e0ee03962cac1eb4a225
       size: 310
   predict_test:
     cmd: "python src/step_counter/models/logistic_regression/predict.py data/steps/test/
@@ -32,21 +32,21 @@ stages:
       nfiles: 2
     - path: models/logistic_regression.joblib
       hash: md5
-      md5: f97b836eb140f9a6259f2cd24f01e2ed
-      size: 1422
+      md5: 6d820e68d576390e724ae34c3b745d21
+      size: 1470
     outs:
     - path: reports/predictions/steps/test/
       hash: md5
-      md5: 42907413293a2e2d213e20abc08d6b62.dir
-      size: 117866
+      md5: bc02f2330104fd273a59cac9016525cd.dir
+      size: 147667
       nfiles: 2
   update-metrics:
     cmd: python update-metrics-table-and-graph.py
     deps:
     - path: reports
       hash: md5
-      md5: 1378bf97199c5630da87f1a7c89aec9d.dir
-      size: 248580
+      md5: d022dd70a600fb434eb815339cd08a75.dir
+      size: 279903
       nfiles: 10
     - path: update-metrics-table-and-graph.py
       hash: md5
@@ -63,23 +63,23 @@ stages:
       nfiles: 2
     - path: reports/predictions/steps/test/
       hash: md5
-      md5: 42907413293a2e2d213e20abc08d6b62.dir
-      size: 117866
+      md5: bc02f2330104fd273a59cac9016525cd.dir
+      size: 147667
       nfiles: 2
     outs:
     - path: reports/figures/confusion_matrix.csv
       hash: md5
-      md5: f81a99714559941c46c8dc18569892dc
-      size: 22614
+      md5: b62c80303bce6a1fb28d284f688d412b
+      size: 23844
     - path: reports/figures/precision_recall_curve.csv
       hash: md5
-      md5: fc87537bc5cbfdb86ea44f749d6e16c4
-      size: 90008
+      md5: 044bf33cabc7fd53cd7bd34b0159d9cc
+      size: 90423
     - path: reports/figures/roc_curve.csv
       hash: md5
-      md5: 3e0b5d6018700247cfaae27a40c5eeea
-      size: 17482
+      md5: e68dc5b13a12622917d26b7349720304
+      size: 17358
     - path: reports/metrics/test.json
       hash: md5
-      md5: da11dcdbb4c57e0a33090761f3559b71
-      size: 206
+      md5: 96f82dd005d42f16f1d3846b21cc92e5
+      size: 207
