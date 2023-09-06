@@ -39,7 +39,7 @@ def main(
         X = df[["x", "y", "z", "magnitude"]].values
         y_pred = model.predict(X)
         df["button_state"] = y_pred
-        df["score"] = model.predict_proba(X).max(axis=1)
+        df["score"] = model.predict_proba(X)[:, 1]
         df.to_csv(output_path / file.name, index=False)
 
 
