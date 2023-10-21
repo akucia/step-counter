@@ -9,3 +9,4 @@ pytest-cov
 scikit-learn
 click
 rich
+Pillow==10.0.1
