@@ -1,28 +1,25 @@
 #!/usr/bin/env python
-import asyncio
-import sys
-from asyncio import sleep
-from concurrent.futures import ThreadPoolExecutor
-import time
 import datetime
+import os
+import queue
+import time
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
 import numpy as np
-from bleak import BleakScanner, BleakClient
+from bleak import BleakClient, BleakScanner
 from bokeh.document import without_document_lock
 from bokeh.events import ButtonClick
-from bokeh.layouts import row, column
-from bokeh.models import ColumnDataSource, Button
+from bokeh.layouts import column, row
+from bokeh.models import Button, ColumnDataSource
 from bokeh.plotting import curdoc, figure
-import queue
-
 
 # TODO add a queue to store data
 ROLLOVER = 200
 
 i = 0
-service_uuid = "551de921-bbaa-4e0a-9374-3e30e88a9073"
-device_uuid = "96b1c8ed-fd4b-4bc3-b5da-9e3ed654f1b1"
+service_uuid = os.environ["SERVICE_UUID"]
+device_uuid = os.environ["DEVICE_UUID"]
 source_x = ColumnDataSource(data=dict(x=[0], y=[0]))
 source_y = ColumnDataSource(data=dict(x=[0], y=[0]))
 source_z = ColumnDataSource(data=dict(x=[0], y=[0]))
