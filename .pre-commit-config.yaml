@@ -63,7 +63,7 @@ repos:
         name: pytest-cov
         stages: [ commit ]
         language: system
-        entry: coverage-badge -o coverage_badge.svg
+        entry: coverage-badge -f -o coverage_badge.svg
         types: [ python ]
         pass_filenames: false
         always_run: true
