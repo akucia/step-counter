@@ -36,7 +36,7 @@ tasks:
       - arduino-cli upload -p /dev/cu.usbmodem141101 --fqbn arduino:mbed_nano:nano33ble ./arduino/Buttons
   start-live-plotting:
     cmds:
-      - bokeh serve --show connect-and-plot.py
+      - bokeh serve --show scripts/connect_and_plot.py
   compile-requirements:
     desc: Compile requirements.in to requirements.txt
     sources:
@@ -45,7 +45,7 @@ tasks:
     cmds:
       - pip-compile -o requirements.txt pyproject.toml
   install-requirements:
-    desc: Install or update python packages using requirements.txt
+    desc: Install or update_plot python packages using requirements.txt
     deps:
       - compile-requirements
     sources:
@@ -55,4 +55,4 @@ tasks:
   test:
     desc: Run tests
     cmds:
-      - pytest -v --cov=src --cov-report=term-missing --cov-fail-under=75 src/
+      - pytest -v --cov=src/step_counter --cov-report=term-missing --cov-fail-under=75 src/
