@@ -3,6 +3,8 @@
 <p align="left">
     <a href="" alt="Interrogate">
         <img src="interrogate_badge.svg" /></a>
+    <a href="" alt="Coverage">
+        <img src="coverage_badge.svg" /></a>
 </p>
 
 # Metrics

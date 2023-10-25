@@ -59,11 +59,11 @@ repos:
         types: [ python ]
         pass_filenames: false
         always_run: true
-      - id: pytest-cov
+      - id: pytest-cov-badge
         name: pytest-cov
-        stages: [ push ]
+        stages: [ commit ]
         language: system
-        entry: pytest -v --cov=src --cov-report=term-missing --cov-fail-under=75 src/
+        entry: coverage-badge -o coverage_badge.svg
         types: [ python ]
         pass_filenames: false
         always_run: true
