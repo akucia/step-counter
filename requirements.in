@@ -6,6 +6,7 @@ pandas
 bokeh
 pytest
 pytest-cov
+pytest-asyncio
 scikit-learn
 click
 rich

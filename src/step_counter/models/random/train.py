@@ -74,6 +74,7 @@ def main(
 
     # save model
     print(f"Saving model to {model_save_path}")
+    model_save_path.parent.mkdir(parents=True, exist_ok=True)
     dump(model, model_save_path)
 
 

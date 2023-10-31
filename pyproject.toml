@@ -57,7 +57,7 @@ ignore-nested-functions = true
 ignore-nested-classes = true
 ignore-setters = false
 fail-under = 80
-exclude = ["setup.py", "docs", "build"]
+exclude = ["setup.py", "docs", "build", "**/test_*.py"]
 ignore-regex = ["^get$", "^mock_.*", ".*BaseClass.*"]
 # possible values: 0 (minimal output), 1 (-v), 2 (-vv)
 verbose = 0
@@ -67,3 +67,6 @@ color = true
 omit-covered-files = false
 generate-badge = "."
 badge-format = "svg"
+
+[tool.bandit.assert_used]
+skips = ['**/test_*.py', '*_test.py', '*/test_*.py']
