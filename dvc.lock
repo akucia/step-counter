@@ -37,16 +37,16 @@ stages:
     outs:
     - path: reports/predictions/steps/test/
       hash: md5
-      md5: 542893e8346ebe7f8e367b32cda46836.dir
-      size: 148395
+      md5: d9e3b84a99fef6dfab7ec2346b1ccc9c.dir
+      size: 118567
       nfiles: 2
   update-metrics:
     cmd: python update-metrics-table-and-graph.py
     deps:
     - path: reports
       hash: md5
-      md5: a2c5b905e345308b4d9d6027ab9f7223.dir
-      size: 277454
+      md5: 805127f6a77bb574cd205a02a37a0962.dir
+      size: 247626
       nfiles: 10
     - path: update-metrics-table-and-graph.py
       hash: md5
@@ -63,8 +63,8 @@ stages:
       nfiles: 2
     - path: reports/predictions/steps/test/
       hash: md5
-      md5: 542893e8346ebe7f8e367b32cda46836.dir
-      size: 148395
+      md5: d9e3b84a99fef6dfab7ec2346b1ccc9c.dir
+      size: 118567
       nfiles: 2
     outs:
     - path: reports/figures/confusion_matrix.csv

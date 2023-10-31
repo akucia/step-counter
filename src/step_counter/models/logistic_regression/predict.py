@@ -32,7 +32,7 @@ def main(
         print(model)
 
     output_path.mkdir(parents=True, exist_ok=True)
-
+    columns_to_save = ["timestamp", "x", "y", "z", "button_state", "score"]
     for file in data_path.glob("*.csv"):
         print(f"Predicting on file: {file}")
         df = load_data_as_dataframe(file.parent, glob_pattern=file.name)
@@ -40,7 +40,8 @@ def main(
         y_pred = model.predict(X)
         df["button_state"] = y_pred
         df["score"] = model.predict_proba(X)[:, 1]
-        df.to_csv(output_path / file.name, index=False)
+
+        df[columns_to_save].to_csv(output_path / file.name, index=False)
 
 
 if __name__ == "__main__":
