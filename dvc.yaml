@@ -11,6 +11,7 @@ stages:
       - data/steps/train/
     outs:
       - models/logistic_regression.joblib
+      - models/logistic_regression.json
     metrics:
       - reports/metrics/train.json
     params:

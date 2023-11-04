@@ -19,7 +19,7 @@ class Source(abc.ABC):
     """Abstract base class for accelerator data sources."""
 
     @abc.abstractmethod
-    def read_data(self) -> AsyncIterable[Tuple[float, np.ndarray]]:
+    def read_data(self) -> AsyncIterable[Tuple[float, np.ndarray, float]]:
         """Read data from the source."""
         pass
 
@@ -36,14 +36,17 @@ class DummySource(Source):
         """
         np.random.seed(seed)
 
-    async def read_data(self) -> AsyncIterable[Tuple[float, np.ndarray]]:
+    async def read_data(self) -> AsyncIterable[Tuple[float, np.ndarray, float]]:
         """Generate random data indefinitely."""
         while True:
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.05)
             timestamp = time.time()
             data_xyz = np.random.random(3)
-            data_button = np.random.randint(0, 2)
-            yield timestamp, np.concatenate((data_xyz, [data_button]))
+            if np.random.random() > 0.9:
+                data_button = 1.0
+            else:
+                data_button = 0.0
+            yield timestamp, data_xyz, data_button
 
 
 class MockSource(Source):
@@ -59,7 +62,7 @@ class MockSource(Source):
         """
         self.file = file
 
-    async def read_data(self) -> AsyncIterable[Tuple[float, np.ndarray]]:
+    async def read_data(self) -> AsyncIterable[Tuple[float, np.ndarray, float]]:
         """Read data from the file indefinitely."""
 
         with open(self.file) as f:
@@ -72,8 +75,8 @@ class MockSource(Source):
             await asyncio.sleep(0.0)
             timestamp, x, y, z, button_state = line.split(",")
             timestamp = float(timestamp)
-            data = np.array([float(x), float(y), float(z), float(button_state)])
-            yield timestamp, data
+            data = np.array([float(x), float(y), float(z)])
+            yield timestamp, data, float(button_state)
             time_diff = timestamp - previous_timestamp
             previous_timestamp = timestamp
             # pause exact amount of time between two timestamps read from file to simulate real-time data
@@ -94,4 +97,4 @@ class BLESource(Source):
                 bytes_data = await client.read_gatt_char(self.service_uuid)
                 timestamp = time.time()
                 decoded_data = np.frombuffer(bytes_data, dtype=np.float32)
-                yield timestamp, decoded_data
+                yield timestamp, decoded_data[0:3], decoded_data[3]

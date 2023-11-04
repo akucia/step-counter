@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import click
@@ -31,16 +32,20 @@ def main(
     else:
         print(model)
 
+    with open(model_save_path.with_suffix(".json")) as f:
+        model_metadata = json.load(f)
+        decision_threshold = model_metadata["decision_threshold"]
+
     output_path.mkdir(parents=True, exist_ok=True)
     columns_to_save = ["timestamp", "x", "y", "z", "button_state", "score"]
     for file in data_path.glob("*.csv"):
         print(f"Predicting on file: {file}")
         df = load_data_as_dataframe(file.parent, glob_pattern=file.name)
         X = df[["x", "y", "z", "magnitude"]].values
-        y_pred = model.predict(X)
-        df["button_state"] = y_pred
-        df["score"] = model.predict_proba(X)[:, 1]
 
+        y_pred_proba = model.predict_proba(X)[:, 1]
+        df["score"] = y_pred_proba
+        df["button_state"] = (y_pred_proba > decision_threshold).astype(float)
         df[columns_to_save].to_csv(output_path / file.name, index=False)
 
 

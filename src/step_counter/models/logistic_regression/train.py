@@ -2,12 +2,13 @@ import json
 from pathlib import Path
 
 import click
+import numpy as np
 from joblib import dump
 from rich.console import Console
 from rich.table import Table
 from sklearn import preprocessing
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, f1_score
 from sklearn.model_selection import cross_validate
 from sklearn.pipeline import make_pipeline
 
@@ -82,13 +83,33 @@ def main(
     # re-train the model on the entire training set
     print("Training model on entire training set...")
     model.fit(X, y)
-    y_pred = model.predict(X)
+    print("Evaluating model on entire training set...")
+    print(classification_report(y, model.predict(X)))
+    y_pred_proba = model.predict_proba(X)
+    # optimize prediction threshold using f1 score
+    scores = []
+    thresholds = np.arange(0, 1, 0.01)
+    for threshold in thresholds:
+        scores.append(f1_score(y, y_pred_proba[:, 1] > threshold))
+
+    best_threshold = thresholds[np.argmax(scores)]
+    print(f"Default threshold (0.5) f1-score: {scores[50]:.3f}")
+    print(f"Best threshold: {best_threshold:.3f}, f1-score: {np.max(scores):.3f}")
+
+    y_pred = y_pred_proba[:, 1] > best_threshold
+    print("Final evaluation on entire training set using best threshold...")
     print(classification_report(y, y_pred))
 
     # save model
     print(f"Saving model to {model_save_path}")
     model_save_path.parent.mkdir(parents=True, exist_ok=True)
     dump(model, model_save_path)
+
+    # save best threshold
+    best_threshold_path = model_save_path.with_suffix(".json")
+    print(f"Saving best threshold to {best_threshold_path}")
+    with open(best_threshold_path, "w") as f:
+        json.dump({"decision_threshold": best_threshold}, f, indent=4)
 
 
 if __name__ == "__main__":

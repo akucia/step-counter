@@ -4,14 +4,24 @@ import os
 import queue
 from functools import partial
 
+import numpy as np
 from bleak import BleakScanner
 from bokeh.document import without_document_lock
 from bokeh.events import ButtonClick
 from bokeh.layouts import column, row
 from bokeh.models import Button, ColumnDataSource
 from bokeh.plotting import curdoc, figure
+from joblib import load
+from sklearn.pipeline import Pipeline
 
 from step_counter.data_sources import BLESource, DummySource, MockSource, Source
+
+model_save_path = "models/logistic_regression.joblib"
+print(f"Loading model from {model_save_path}...")
+model = load(model_save_path)
+if isinstance(model, Pipeline):
+    for i, step in enumerate(model.steps):
+        print(f"Step {i}: {step}")
 
 PLOT_ROLLOVER = 200
 # TODO change this global counter to something better
@@ -20,7 +30,10 @@ GLOBAL_PLOT_INDEX = 0
 source_x = ColumnDataSource(data=dict(x=[0], y=[0]))
 source_y = ColumnDataSource(data=dict(x=[0], y=[0]))
 source_z = ColumnDataSource(data=dict(x=[0], y=[0]))
-source_b = ColumnDataSource(data=dict(x=[0], y=[0]))
+source_button = ColumnDataSource(data=dict(x=[0], y=[0]))
+source_button_score = ColumnDataSource(data=dict(x=[0], y=[0]))
+source_button_pred = ColumnDataSource(data=dict(x=[0], y=[0]))
+
 
 doc = curdoc()
 data_queue = queue.SimpleQueue()
@@ -92,15 +105,23 @@ def read_queue_and_save_data():
 
 @without_document_lock
 async def read_data_from_source(source: Source):
-    async for timestamp, accelerometer_data in source.read_data():
+    async for timestamp, accelerometer_data, button_data in source.read_data():
         data_queue.put((timestamp, accelerometer_data))
+        magnitude = np.linalg.norm(accelerometer_data[0:3])
+        X = np.array([*accelerometer_data[0:3], magnitude])
+        button_pred_score = model.predict_proba([X])[0][1]
+        button_pred = (button_pred_score > 0.46).astype(float)
+        print(f"Button state: {button_data}, prediction: {button_pred:.3f}")
+
         doc.add_next_tick_callback(
             partial(
                 update_plot,
                 x=accelerometer_data[0],
                 y=accelerometer_data[1],
                 z=accelerometer_data[2],
-                button_state=accelerometer_data[3],
+                button_state=button_data,
+                button_pred_score=button_pred_score,
+                button_pred=button_pred,
             )
         )
 
@@ -115,7 +136,14 @@ async def _update_plot_source(source: ColumnDataSource, data: float):
     )
 
 
-async def update_plot(x: float, y: float, z: float, button_state: float):
+async def update_plot(
+    x: float,
+    y: float,
+    z: float,
+    button_state: float,
+    button_pred_score: float,
+    button_pred: float,
+):
     # todo find a way to get index better than global counter
     global GLOBAL_PLOT_INDEX
     GLOBAL_PLOT_INDEX += 1
@@ -124,7 +152,9 @@ async def update_plot(x: float, y: float, z: float, button_state: float):
     await _update_plot_source(source_x, x)
     await _update_plot_source(source_y, y)
     await _update_plot_source(source_z, z)
-    await _update_plot_source(source_b, button_state)
+    await _update_plot_source(source_button, button_state)
+    await _update_plot_source(source_button_score, button_pred_score)
+    await _update_plot_source(source_button_pred, button_pred)
 
 
 p1 = figure(y_range=[-4, 4])
@@ -135,7 +165,9 @@ lz = p1.line(x="x", y="y", source=source_z, color="blue")
 
 p2 = figure(y_range=[-0.1, 1.5])
 
-lb = p2.line(x="x", y="y", source=source_b, color="blue")
+lb = p2.line(x="x", y="y", source=source_button, color="blue")
+lb_pred = p2.line(x="x", y="y", source=source_button_pred, color="red")
+p2.line(x="x", y="y", source=source_button_score, color="orange")
 
 button = Button(label="Save data to file")
 
