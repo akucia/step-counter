@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Tuple
 
 import click
+import numpy as np
 import pandas as pd
 from joblib import load
 from sklearn.pipeline import Pipeline
@@ -28,7 +29,7 @@ class LogisticRegressionPredictor:
         with open(model_path.with_suffix(".json")) as f:
             model_metadata = json.load(f)
             self.decision_threshold = model_metadata["decision_threshold"]
-        self.previous_input = (0, 0, 0)
+        self.input = [(0, 0, 0), (0, 0, 0), (0, 0, 0)]
 
     def predict(self, x, y, z: float) -> Tuple[float, float]:
         """Predict button state from accelerometer data
@@ -43,20 +44,15 @@ class LogisticRegressionPredictor:
 
 
         """
+        self.input.append((x, y, z))
+        self.input.pop(0)
 
         X = pd.DataFrame(
-            {
-                "x": [x],
-                "y": [y],
-                "z": [z],
-                "x-1": [self.previous_input[0]],
-                "y-1": [self.previous_input[1]],
-                "z-1": [self.previous_input[2]],
-            }
+            np.array(self.input).reshape(1, 9),
+            columns=["x-2", "y-2", "z-2", "x-1", "y-1", "z-1", "x", "y", "z"],
         )
 
         y_pred_proba = self.model.predict_proba(X)[0, 1]
-        self.previous_input = (x, y, z)
         return (y_pred_proba > self.decision_threshold).astype(float), y_pred_proba
 
 

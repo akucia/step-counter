@@ -54,12 +54,17 @@ def main(
     X["y-1"] = X["y"].shift(1).fillna(0).values
     X["z-1"] = X["z"].shift(1).fillna(0).values
 
+    X["x-2"] = X["x"].shift(2).fillna(0).values
+    X["y-2"] = X["y"].shift(2).fillna(0).values
+    X["z-2"] = X["z"].shift(2).fillna(0).values
+
     y = data["button_state"].values
 
     feature_engineering = ColumnTransformer(
         [
             ("magnitude", FunctionTransformer(get_magnitude), ["x", "y", "z"]),
             ("magnitude-1", FunctionTransformer(get_magnitude), ["x-1", "y-1", "z-1"]),
+            ("magnitude-2", FunctionTransformer(get_magnitude), ["x-2", "y-2", "z-2"]),
         ]
     )
 

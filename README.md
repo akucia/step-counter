@@ -10,8 +10,8 @@
 # Metrics
 | Path                       | test.f1-score_macro   | test.precision_macro   | test.predicted_step_count   | test.recall_macro   | test.roc_auc   | test.support_macro   | test.target_step_count   | train.f1_macro   | train.precision_macro   | train.recall_macro   | validation.f1_macro   | validation.precision_macro   | validation.recall_macro   |
 |----------------------------|-----------------------|------------------------|-----------------------------|---------------------|----------------|----------------------|--------------------------|------------------|-------------------------|----------------------|-----------------------|------------------------------|---------------------------|
-| reports/metrics/train.json | -                     | -                      | -                           | -                   | -              | -                    | -                        | 0.71             | 0.69                    | 0.77                 | 0.71                  | 0.7                          | 0.77                      |
-| reports/metrics/test.json  | 0.72                  | 0.7                    | 77                          | 0.74                | 0.83           | 1585.0               | 45                       | -                | -                       | -                    | -                     | -                            | -                         |
+| reports/metrics/train.json | -                     | -                      | -                           | -                   | -              | -                    | -                        | 0.71             | 0.69                    | 0.77                 | 0.71                  | 0.7                          | 0.76                      |
+| reports/metrics/test.json  | 0.72                  | 0.71                   | 61                          | 0.75                | 0.85           | 1585.0               | 45                       | -                | -                       | -                    | -                     | -                            | -                         |
 
 # Steps Graph
 ```mermaid
