@@ -27,6 +27,16 @@ def load_data_as_dataframe(
     return df
 
 
-def get_magnitude(df: pd.DataFrame) -> pd.DataFrame:
-    df["magnitude"] = np.linalg.norm(df[["x", "y", "z"]].values, axis=1)
-    return df
+def get_magnitude(df: pd.DataFrame) -> np.ndarray:
+    """
+    Calculate magnitude of 3D vector
+    Args:
+        df: a dataframe with 3 columns
+
+    Returns:
+        a numpy array with magnitude values
+
+    """
+    if df.shape[1] != 3:
+        raise ValueError("df must have 3 columns")
+    return np.linalg.norm(df.values, axis=1).reshape(-1, 1)

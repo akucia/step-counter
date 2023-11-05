@@ -1,11 +1,63 @@
 import json
 from pathlib import Path
+from typing import Tuple
 
 import click
+import pandas as pd
 from joblib import load
 from sklearn.pipeline import Pipeline
 
 from step_counter.datasets import load_data_as_dataframe
+
+
+class LogisticRegressionPredictor:
+    """Predict button state from accelerometer data using a trained LogisticRegression model
+
+    Notes:
+        This class stores previous accelerometer data to use as input for the next prediction.
+
+    """
+
+    def __init__(self, model_path: Path):
+        self.model = load(model_path)
+        if isinstance(self.model, Pipeline):
+            for i, step in enumerate(self.model.steps):
+                print(f"Step {i}: {step}")
+        else:
+            print(self.model)
+        with open(model_path.with_suffix(".json")) as f:
+            model_metadata = json.load(f)
+            self.decision_threshold = model_metadata["decision_threshold"]
+        self.previous_input = (0, 0, 0)
+
+    def predict(self, x, y, z: float) -> Tuple[float, float]:
+        """Predict button state from accelerometer data
+
+        Args:
+            x: accelerometer data from x axis
+            y: accelerometer data from y axis
+            z: accelerometer data from z axis
+
+        Returns:
+            Tuple with predicted button state and prediction score
+
+
+        """
+
+        X = pd.DataFrame(
+            {
+                "x": [x],
+                "y": [y],
+                "z": [z],
+                "x-1": [self.previous_input[0]],
+                "y-1": [self.previous_input[1]],
+                "z-1": [self.previous_input[2]],
+            }
+        )
+
+        y_pred_proba = self.model.predict_proba(X)[0, 1]
+        self.previous_input = (x, y, z)
+        return (y_pred_proba > self.decision_threshold).astype(float), y_pred_proba
 
 
 @click.command()
@@ -25,16 +77,7 @@ def main(
 
     """
     print(f"Loading model from {model_save_path}...")
-    model = load(model_save_path)
-    if isinstance(model, Pipeline):
-        for i, step in enumerate(model.steps):
-            print(f"Step {i}: {step}")
-    else:
-        print(model)
-
-    with open(model_save_path.with_suffix(".json")) as f:
-        model_metadata = json.load(f)
-        decision_threshold = model_metadata["decision_threshold"]
+    model = LogisticRegressionPredictor(model_save_path)
 
     output_path.mkdir(parents=True, exist_ok=True)
     columns_to_save = ["timestamp", "x", "y", "z", "button_state", "score"]
@@ -42,13 +85,12 @@ def main(
         print(f"Predicting on file: {file}")
         df = load_data_as_dataframe(file.parent, glob_pattern=file.name)
         # iterate over rows of df and make predictions for each step
-        for i in df.index:
-            X = df.loc[i : i + 1, ["x", "y", "z"]].copy()
-            y_pred_proba = model.predict_proba(X)[0, 1]
-            df.loc[i, "score"] = y_pred_proba
-            df.loc[i, "button_state"] = (y_pred_proba > decision_threshold).astype(
-                float
-            )
+        for i, row in df.iterrows():
+            X = row[["x", "y", "z"]]
+            y_pred, score = model.predict(X["x"], X["y"], X["z"])
+            df.loc[i, "button_state"] = y_pred
+            df.loc[i, "score"] = score
+
         df[columns_to_save].to_csv(output_path / file.name, index=False)
 
 

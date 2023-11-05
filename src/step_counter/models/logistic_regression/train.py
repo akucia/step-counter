@@ -49,11 +49,17 @@ def main(
     data = load_data_as_dataframe(data_path)
 
     X = data[["x", "y", "z"]]
+    # add shift columns
+    X["x-1"] = X["x"].shift(1).fillna(0).values
+    X["y-1"] = X["y"].shift(1).fillna(0).values
+    X["z-1"] = X["z"].shift(1).fillna(0).values
+
     y = data["button_state"].values
 
     feature_engineering = ColumnTransformer(
         [
             ("magnitude", FunctionTransformer(get_magnitude), ["x", "y", "z"]),
+            ("magnitude-1", FunctionTransformer(get_magnitude), ["x-1", "y-1", "z-1"]),
         ]
     )
 
