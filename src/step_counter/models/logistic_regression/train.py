@@ -94,6 +94,7 @@ def main(
     console = Console()
     console.print(table)
     metrics = {
+        "num_samples": len(X),
         "train": train_scores,
         "validation": validation_scores,
     }

@@ -15,7 +15,7 @@ stages:
     outs:
     - path: models/logistic_regression.html
       hash: md5
-      md5: 8ecbcf40c01cf49faa0f69c0d59f4a9d
+      md5: 2aaeca01ea9c86e0188ea5c4dd1993f9
       size: 11680
     - path: models/logistic_regression.joblib
       hash: md5
@@ -27,8 +27,8 @@ stages:
       size: 33
     - path: reports/metrics/train.json
       hash: md5
-      md5: d6e56855d071221bdb497743b2f311f6
-      size: 310
+      md5: a4b1fdf28d253997e0e6678186e00497
+      size: 335
   predict_test:
     cmd: "python src/step_counter/models/logistic_regression/predict.py data/steps/test/
       models/logistic_regression.joblib reports/predictions/steps/test/\n"
@@ -53,8 +53,8 @@ stages:
     deps:
     - path: reports
       hash: md5
-      md5: e6ef031787ee9c5055d1aec8a46040fa.dir
-      size: 247049
+      md5: f9e6191b53f9bc64a1915ecdbf305897.dir
+      size: 247074
       nfiles: 10
     - path: update-metrics-table-and-graph.py
       hash: md5
