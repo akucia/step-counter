@@ -13,13 +13,17 @@ stages:
       params.yaml:
         seed: 42
     outs:
+    - path: models/logistic_regression.html
+      hash: md5
+      md5: b905e3e48b0ac83f61dc92ee4a1026d4
+      size: 8190
     - path: models/logistic_regression.joblib
       hash: md5
-      md5: 6d820e68d576390e724ae34c3b745d21
-      size: 1470
+      md5: b5c798ccf9095604254b2375a63e10d1
+      size: 2830
     - path: models/logistic_regression.json
       hash: md5
-      md5: 0232abb19bef1d635d40086ddaaac5ab
+      md5: a8ca2b86bc14859491f2f0e2583d0f1a
       size: 34
     - path: reports/metrics/train.json
       hash: md5
@@ -36,21 +40,21 @@ stages:
       nfiles: 2
     - path: models/logistic_regression.joblib
       hash: md5
-      md5: 6d820e68d576390e724ae34c3b745d21
-      size: 1470
+      md5: b5c798ccf9095604254b2375a63e10d1
+      size: 2830
     outs:
     - path: reports/predictions/steps/test/
       hash: md5
-      md5: cc97fd25638358c70c52601a6be39c16.dir
-      size: 118567
+      md5: 87007b02fa340224bbd883baed5eaeaf.dir
+      size: 118551
       nfiles: 2
   update-metrics:
     cmd: python update-metrics-table-and-graph.py
     deps:
     - path: reports
       hash: md5
-      md5: 66cede1d9b6be2836fcdc9c69a7546f9.dir
-      size: 247743
+      md5: 482de541dc4906675727d7a3b90b2036.dir
+      size: 247820
       nfiles: 10
     - path: update-metrics-table-and-graph.py
       hash: md5
@@ -67,23 +71,23 @@ stages:
       nfiles: 2
     - path: reports/predictions/steps/test/
       hash: md5
-      md5: cc97fd25638358c70c52601a6be39c16.dir
-      size: 118567
+      md5: 87007b02fa340224bbd883baed5eaeaf.dir
+      size: 118551
       nfiles: 2
     outs:
     - path: reports/figures/confusion_matrix.csv
       hash: md5
-      md5: bb77f3aec80f1a37f03a194ae88eb5ca
-      size: 23961
+      md5: e3877a6fe63a6af29210c08675a56a14
+      size: 24030
     - path: reports/figures/precision_recall_curve.csv
       hash: md5
-      md5: 0f0eee130556bf9b5bb9e755d4b93879
-      size: 90297
+      md5: d7e2ad600619ec300ac9ea7028fc0b25
+      size: 90287
     - path: reports/figures/roc_curve.csv
       hash: md5
-      md5: 0478881040a44d06b377996747d9509f
-      size: 14279
+      md5: 256f41f63f3073bbbaa1fc5d2824d809
+      size: 14280
     - path: reports/metrics/test.json
       hash: md5
-      md5: 55727ca43b78e16f29fd49d989eb134e
-      size: 235
+      md5: c6b6762b288e8f1f26eaf35e95998cef
+      size: 268

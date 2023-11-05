@@ -24,5 +24,9 @@ def load_data_as_dataframe(
         dfs.append(df)
 
     df = pd.concat(dfs)
+    return df
+
+
+def get_magnitude(df: pd.DataFrame) -> pd.DataFrame:
     df["magnitude"] = np.linalg.norm(df[["x", "y", "z"]].values, axis=1)
     return df

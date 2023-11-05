@@ -104,13 +104,11 @@ def main(
         steps = count_steps(y_pred)
         predicted_steps_per_file[file.name] = steps
 
-    # calculate mae for steps
-    mae = 0
-    for file in target_steps_per_file.keys():
-        mae += abs(target_steps_per_file[file] - predicted_steps_per_file[file])
-    mae /= len(target_steps_per_file.keys())
-    print(f"Step Count MAE: {mae}")
-    metrics["test"]["step_count_mae"] = mae
+    predicted_steps = int(sum(predicted_steps_per_file.values()))
+    actual_steps = int(sum(target_steps_per_file.values()))
+    print(f"Predicted steps: {predicted_steps}, actual steps: {actual_steps}")
+    metrics["test"]["predicted_step_count"] = predicted_steps
+    metrics["test"]["target_step_count"] = actual_steps
 
     with open(reports_dir / "test.json", "w") as f:
         json.dump(metrics, f, indent=2)

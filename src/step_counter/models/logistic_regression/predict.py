@@ -41,11 +41,14 @@ def main(
     for file in data_path.glob("*.csv"):
         print(f"Predicting on file: {file}")
         df = load_data_as_dataframe(file.parent, glob_pattern=file.name)
-        X = df[["x", "y", "z", "magnitude"]].values
-
-        y_pred_proba = model.predict_proba(X)[:, 1]
-        df["score"] = y_pred_proba
-        df["button_state"] = (y_pred_proba > decision_threshold).astype(float)
+        # iterate over rows of df and make predictions for each step
+        for i in df.index:
+            X = df.loc[i : i + 1, ["x", "y", "z"]].copy()
+            y_pred_proba = model.predict_proba(X)[0, 1]
+            df.loc[i, "score"] = y_pred_proba
+            df.loc[i, "button_state"] = (y_pred_proba > decision_threshold).astype(
+                float
+            )
         df[columns_to_save].to_csv(output_path / file.name, index=False)
 
 

@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import datetime
+import json
 import os
 import queue
 from functools import partial
 
-import numpy as np
+import pandas as pd
 from bleak import BleakScanner
 from bokeh.document import without_document_lock
 from bokeh.events import ButtonClick
@@ -22,6 +23,8 @@ model = load(model_save_path)
 if isinstance(model, Pipeline):
     for i, step in enumerate(model.steps):
         print(f"Step {i}: {step}")
+with open(model_save_path.replace(".joblib", ".json")) as f:
+    prediction_threshold = json.load(f)["decision_threshold"]
 
 PLOT_ROLLOVER = 200
 # TODO change this global counter to something better
@@ -107,11 +110,18 @@ def read_queue_and_save_data():
 async def read_data_from_source(source: Source):
     async for timestamp, accelerometer_data, button_data in source.read_data():
         data_queue.put((timestamp, accelerometer_data))
-        magnitude = np.linalg.norm(accelerometer_data[0:3])
-        X = np.array([*accelerometer_data[0:3], magnitude])
-        button_pred_score = model.predict_proba([X])[0][1]
-        button_pred = (button_pred_score > 0.46).astype(float)
-        print(f"Button state: {button_data}, prediction: {button_pred:.3f}")
+        X = pd.DataFrame(
+            [
+                {
+                    "x": accelerometer_data[0],
+                    "y": accelerometer_data[1],
+                    "z": accelerometer_data[2],
+                }
+            ]
+        )
+        button_pred_score = model.predict_proba(X)[0, 1]
+        button_pred = (button_pred_score > prediction_threshold).astype(float)
+        print(f"Button state: {button_data}, prediction: {button_pred_score:.3f}")
 
         doc.add_next_tick_callback(
             partial(

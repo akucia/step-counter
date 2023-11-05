@@ -7,12 +7,15 @@ from joblib import dump
 from rich.console import Console
 from rich.table import Table
 from sklearn import preprocessing
+from sklearn.compose import ColumnTransformer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, f1_score
 from sklearn.model_selection import cross_validate
 from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import FunctionTransformer
+from sklearn.utils import estimator_html_repr
 
-from step_counter.datasets import load_data_as_dataframe
+from step_counter.datasets import get_magnitude, load_data_as_dataframe
 
 
 @click.command()
@@ -45,9 +48,17 @@ def main(
     # load data
     data = load_data_as_dataframe(data_path)
 
-    X = data[["x", "y", "z", "magnitude"]].values
+    X = data[["x", "y", "z"]]
     y = data["button_state"].values
+
+    feature_engineering = ColumnTransformer(
+        [
+            ("magnitude", FunctionTransformer(get_magnitude), ["x", "y", "z"]),
+        ]
+    )
+
     model = make_pipeline(
+        feature_engineering,
         preprocessing.StandardScaler(),
         LogisticRegression(
             random_state=seed,
@@ -57,7 +68,7 @@ def main(
     print("Training model with cross validation...")
     scoring = ["precision_macro", "recall_macro", "f1_macro"]
     scores = cross_validate(
-        model, X, y, scoring=scoring, return_train_score=True, cv=kfolds
+        model, X, y, scoring=scoring, return_train_score=True, cv=kfolds, n_jobs=4
     )
     train_scores = {metric: scores[f"train_{metric}"].mean() for metric in scoring}
     validation_scores = {metric: scores[f"test_{metric}"].mean() for metric in scoring}
@@ -90,7 +101,7 @@ def main(
     scores = []
     thresholds = np.arange(0, 1, 0.01)
     for threshold in thresholds:
-        scores.append(f1_score(y, y_pred_proba[:, 1] > threshold))
+        scores.append(f1_score(y, y_pred_proba[:, 1] > threshold, average="macro"))
 
     best_threshold = thresholds[np.argmax(scores)]
     print(f"Default threshold (0.5) f1-score: {scores[50]:.3f}")
@@ -110,6 +121,9 @@ def main(
     print(f"Saving best threshold to {best_threshold_path}")
     with open(best_threshold_path, "w") as f:
         json.dump({"decision_threshold": best_threshold}, f, indent=4)
+
+    with open(model_save_path.with_suffix(".html"), "w") as f:
+        f.write(estimator_html_repr(model))
 
 
 if __name__ == "__main__":
