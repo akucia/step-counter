@@ -15,7 +15,7 @@ stages:
     outs:
     - path: models/logistic_regression.html
       hash: md5
-      md5: af39668c2cd6146976cbf7b8bd3dfb4c
+      md5: 8ecbcf40c01cf49faa0f69c0d59f4a9d
       size: 11680
     - path: models/logistic_regression.joblib
       hash: md5
