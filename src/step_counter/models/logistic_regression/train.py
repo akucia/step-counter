@@ -108,8 +108,9 @@ def main(
     model.fit(X, y)
     print("Evaluating model on entire training set...")
     print(classification_report(y, model.predict(X)))
-    y_pred_proba = model.predict_proba(X)
+
     # optimize prediction threshold using f1 score
+    y_pred_proba = model.predict_proba(X)
     scores = []
     thresholds = np.arange(0, 1, 0.01)
     for threshold in thresholds:
