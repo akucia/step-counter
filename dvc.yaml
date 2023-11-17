@@ -2,17 +2,17 @@ stages:
   train:
     cmd: >
       python
-      src/step_counter/models/logistic_regression/train.py
+      src/step_counter/models/dnn_keras/train.py
       data/steps/train/
-      models/logistic_regression.joblib
+      models/dnn
       reports/metrics/train.json
       --seed=${seed}
     deps:
       - data/steps/train/
     outs:
-      - models/logistic_regression.joblib
-      - models/logistic_regression.json
-      - models/logistic_regression.html
+      - models/dnn
+      - models/dnn.json
+      - models/dnn.png
     metrics:
       - reports/metrics/train.json
     params:
@@ -20,13 +20,13 @@ stages:
   predict_test:
     cmd: >
       python
-      src/step_counter/models/logistic_regression/predict.py
+      src/step_counter/models/dnn_keras/predict.py
       data/steps/test/
-      models/logistic_regression.joblib
+      models/dnn
       reports/predictions/steps/test/
     deps:
       - data/steps/test/
-      - models/logistic_regression.joblib
+      - models/dnn
     outs:
       - reports/predictions/steps/test/
   evaluate:

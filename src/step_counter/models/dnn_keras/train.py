@@ -120,6 +120,8 @@ def main(
     X["y-2"] = X["y"].shift(2).fillna(0).values
     X["z-2"] = X["z"].shift(2).fillna(0).values
 
+    # todo automatically generate magnitude features inside the model
+
     X["magnitude"] = np.sqrt(X["x"] ** 2 + X["y"] ** 2 + X["z"] ** 2)
     X["magnitude-1"] = np.sqrt(X["x-1"] ** 2 + X["y-1"] ** 2 + X["z-1"] ** 2)
     X["magnitude-2"] = np.sqrt(X["x-2"] ** 2 + X["y-2"] ** 2 + X["z-2"] ** 2)
@@ -228,7 +230,7 @@ def main(
     best_threshold_path = model_save_path.with_suffix(".json")
     print(f"Saving best threshold to {best_threshold_path}")
     with open(best_threshold_path, "w") as f:
-        json.dump({"threshold": best_threshold}, f, indent=4)
+        json.dump({"decision_threshold": best_threshold}, f, indent=4)
 
     plot_model(
         model,
