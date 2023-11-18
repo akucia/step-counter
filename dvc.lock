@@ -15,21 +15,17 @@ stages:
     outs:
     - path: models/dnn
       hash: md5
-      md5: 9ca1fe71ac058fbfd4357ff9fc6411de.dir
-      size: 391756
+      md5: a6307f1938d77d3861971144e143dbb7.dir
+      size: 479389
       nfiles: 5
-    - path: models/dnn.json
-      hash: md5
-      md5: 03e3565e70c5369b0d7d4d022f06b80c
-      size: 48
     - path: models/dnn.png
       hash: md5
-      md5: 6d579c20083715d46ed8dda958af2656
-      size: 229641
+      md5: 38f18146af296d43fdd1d964df8bf3ab
+      size: 114693
     - path: reports/metrics/train.json
       hash: md5
-      md5: 9d1394120c4dc1c084dda91ac34e3adf
-      size: 415
+      md5: 16a59e74fc481cbade5150a0f40793a8
+      size: 416
   predict_test:
     cmd: "python src/step_counter/models/dnn_keras/predict.py data/steps/test/ models/dnn
       reports/predictions/steps/test/\n"
@@ -41,22 +37,22 @@ stages:
       nfiles: 2
     - path: models/dnn
       hash: md5
-      md5: 9ca1fe71ac058fbfd4357ff9fc6411de.dir
-      size: 391756
+      md5: a6307f1938d77d3861971144e143dbb7.dir
+      size: 479389
       nfiles: 5
     outs:
     - path: reports/predictions/steps/test/
       hash: md5
-      md5: d2225dbd783e2f66c116f65aafa9cea0.dir
-      size: 118916
+      md5: e575e3804d1651dab2199a7bd4b3da03.dir
+      size: 118939
       nfiles: 2
   update-metrics:
     cmd: python update-metrics-table-and-graph.py
     deps:
     - path: reports
       hash: md5
-      md5: b796643eb501782fcdae50db70dde3fc.dir
-      size: 240628
+      md5: 32e1283c33b672d2ca985e34b8aaf62c.dir
+      size: 242721
       nfiles: 10
     - path: update-metrics-table-and-graph.py
       hash: md5
@@ -73,23 +69,23 @@ stages:
       nfiles: 2
     - path: reports/predictions/steps/test/
       hash: md5
-      md5: d2225dbd783e2f66c116f65aafa9cea0.dir
-      size: 118916
+      md5: e575e3804d1651dab2199a7bd4b3da03.dir
+      size: 118939
       nfiles: 2
     outs:
     - path: reports/figures/confusion_matrix.csv
       hash: md5
-      md5: c44e0f3c165eadae779c6af27ef3bb36
-      size: 24168
+      md5: 963baece7e3d24541f153a02b8b8a250
+      size: 24165
     - path: reports/figures/precision_recall_curve.csv
       hash: md5
-      md5: 03d18d8c64bd88b67696381cddb9c781
-      size: 85658
+      md5: caeb8d89f7800003953840d369f539c6
+      size: 87565
     - path: reports/figures/roc_curve.csv
       hash: md5
-      md5: 875b2e8ca8bf3ecd1c8a63a4257538a6
-      size: 11109
+      md5: de6069850f1c7caf9442adb41fb254ef
+      size: 11274
     - path: reports/metrics/test.json
       hash: md5
-      md5: 16c24277a49b6732b962366299dcf1c9
+      md5: 78ee3fa72581de82e631fb67edd2cfce
       size: 268

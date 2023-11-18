@@ -40,9 +40,6 @@ features = [
     "x-2",
     "y-2",
     "z-2",
-    "magnitude",
-    "magnitude-1",
-    "magnitude-2",
 ]
 
 
@@ -120,12 +117,6 @@ def main(
     X["y-2"] = X["y"].shift(2).fillna(0).values
     X["z-2"] = X["z"].shift(2).fillna(0).values
 
-    # todo automatically generate magnitude features inside the model
-
-    X["magnitude"] = np.sqrt(X["x"] ** 2 + X["y"] ** 2 + X["z"] ** 2)
-    X["magnitude-1"] = np.sqrt(X["x-1"] ** 2 + X["y-1"] ** 2 + X["z-1"] ** 2)
-    X["magnitude-2"] = np.sqrt(X["x-2"] ** 2 + X["y-2"] ** 2 + X["z-2"] ** 2)
-
     y = data["button_state"].values.reshape(-1, 1)
 
     scores = {
@@ -145,7 +136,7 @@ def main(
                 y[test],
             )
             futures.append(
-                executor.submit(_train_model, X_test, X_train, y_test, y_train)
+                executor.submit(_train_model, X_test, X_train, y_test, y_train, seed)
             )
         for future in tqdm(as_completed(futures), total=len(futures), desc="Training"):
             task_scores = future.result()
@@ -221,16 +212,19 @@ def main(
     print("Final evaluation on entire training set using best threshold...")
     print(classification_report(y_target, y_pred > best_threshold))
 
+    # add layer with threshold to the model
+    x = model(model.inputs)
+    threshold_scores = layers.Lambda(lambda output: output > best_threshold)(x)
+    model = keras.Model(
+        inputs=model.inputs, outputs={"score": x, "decision": threshold_scores}
+    )
+
+    model.summary()
+
     # save model
     print(f"Saving model to {model_save_path}")
     model_save_path.parent.mkdir(parents=True, exist_ok=True)
     model.save(model_save_path, save_format="tf")
-
-    # save best threshold
-    best_threshold_path = model_save_path.with_suffix(".json")
-    print(f"Saving best threshold to {best_threshold_path}")
-    with open(best_threshold_path, "w") as f:
-        json.dump({"decision_threshold": best_threshold}, f, indent=4)
 
     plot_model(
         model,
@@ -240,7 +234,8 @@ def main(
     )
 
 
-def _train_model(X_test, X_train, y_test, y_train):
+def _train_model(X_test, X_train, y_test, y_train, seed):
+    keras.utils.set_random_seed(seed)
     scores = {
         "train": dict(),
         "val": dict(),
@@ -263,14 +258,10 @@ def _train_model(X_test, X_train, y_test, y_train):
         class_weight=cw,
     )
     y_pred, y_target = _predict_on_dataset(model, train_ds)
-    # print("Train set")
-    # print(classification_report(y_target, y_pred))
     train_metrics = _calculate_metrics(y_pred, y_target)
     for metric, score in train_metrics.items():
         scores["train"][metric] = score
     y_pred, y_target = _predict_on_dataset(model, val_ds)
-    # print("Validation set")
-    # print(classification_report(y_target, y_pred))
     val_metrics = _calculate_metrics(y_pred, y_target)
     for metric, score in val_metrics.items():
         scores["val"][metric] = score
@@ -313,14 +304,26 @@ def _build_keras_model(
 ):
     # build model
     x_input = []
-    encoded_features = []
+    encoded_features = {}
 
     for header in features:
         numeric_col = tf.keras.Input(shape=(1,), name=header)
         encoded_feature = encode_numerical_feature(numeric_col, header, train_ds)
         x_input.append(numeric_col)
-        encoded_features.append(encoded_feature)
-    all_features = layers.concatenate(encoded_features)
+        encoded_features[header] = encoded_feature
+
+    # add magnitude features as sqrt (x**2 + y**2 + z**2)
+    encoded_features["magnitude"] = layers.Lambda(
+        lambda x: tf.sqrt(x["x"] ** 2 + x["y"] ** 2 + x["z"] ** 2)
+    )(encoded_features)
+    encoded_features["magnitude-1"] = layers.Lambda(
+        lambda x: tf.sqrt(x["x-1"] ** 2 + x["y-1"] ** 2 + x["z-1"] ** 2)
+    )(encoded_features)
+    encoded_features["magnitude-2"] = layers.Lambda(
+        lambda x: tf.sqrt(x["x-2"] ** 2 + x["y-2"] ** 2 + x["z-2"] ** 2)
+    )(encoded_features)
+
+    all_features = layers.concatenate(encoded_features.values())
     x = all_features
     for _ in range(num_layers):
         x = layers.Dense(units, activation="relu")(x)
