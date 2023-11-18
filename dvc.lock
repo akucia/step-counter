@@ -15,7 +15,7 @@ stages:
     outs:
     - path: models/dnn
       hash: md5
-      md5: a6307f1938d77d3861971144e143dbb7.dir
+      md5: e0c2090747127ca13e3ac226a46ccb42.dir
       size: 479389
       nfiles: 5
     - path: models/dnn.png
@@ -24,8 +24,8 @@ stages:
       size: 114693
     - path: reports/metrics/train.json
       hash: md5
-      md5: 16a59e74fc481cbade5150a0f40793a8
-      size: 416
+      md5: 118d2756b370ecac34fa19ea66ecc61c
+      size: 414
   predict_test:
     cmd: "python src/step_counter/models/dnn_keras/predict.py data/steps/test/ models/dnn
       reports/predictions/steps/test/\n"
@@ -37,7 +37,7 @@ stages:
       nfiles: 2
     - path: models/dnn
       hash: md5
-      md5: a6307f1938d77d3861971144e143dbb7.dir
+      md5: e0c2090747127ca13e3ac226a46ccb42.dir
       size: 479389
       nfiles: 5
     outs:
@@ -51,8 +51,8 @@ stages:
     deps:
     - path: reports
       hash: md5
-      md5: 32e1283c33b672d2ca985e34b8aaf62c.dir
-      size: 242721
+      md5: e429d18ec3be8f6be3023bd7db609763.dir
+      size: 242719
       nfiles: 10
     - path: update-metrics-table-and-graph.py
       hash: md5

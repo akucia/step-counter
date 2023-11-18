@@ -86,7 +86,11 @@ def main(
         total += len(df)
         df[columns_to_save].to_csv(output_path / file.name, index=False)
     elapsed = time.time() - start
-    print(f"Prediction time: {elapsed:.2f}s, Speed {total/elapsed:.2f} steps/s")
+    speed = total / elapsed
+    miliseconds_per_step = elapsed / total * 1000
+    print(
+        f"Predicted {total} steps in {elapsed:.2f} seconds | {speed:.2f} steps/s | {miliseconds_per_step:.2f} ms/step"
+    )
 
 
 if __name__ == "__main__":
