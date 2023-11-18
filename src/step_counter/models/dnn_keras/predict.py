@@ -23,7 +23,7 @@ class KerasDNNPredictor:
         self.model = keras.models.load_model(model_path)
         self.model.summary()
 
-        self.input = [(0, 0, 0), (0, 0, 0), (0, 0, 0)]
+        self.input = np.array([(0, 0, 0), (0, 0, 0), (0, 0, 0)]).astype(np.float32)
 
     def predict(self, x, y, z: float) -> Tuple[float, float]:
         """Predict button state from accelerometer data
@@ -38,8 +38,10 @@ class KerasDNNPredictor:
 
 
         """
-        self.input.append((x, y, z))
-        self.input.pop(0)
+        # roll input array
+        self.input = np.roll(self.input, -1, axis=0)
+        # add new data
+        self.input[-1] = (x, y, z)
 
         X = pd.DataFrame(
             np.array(self.input).reshape(1, 9),
