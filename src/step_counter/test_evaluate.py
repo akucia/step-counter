@@ -2,6 +2,7 @@ import json
 
 import numpy as np
 import pandas as pd
+import pytest
 from click.testing import CliRunner
 
 from step_counter.evaluate import count_steps
@@ -62,6 +63,49 @@ def test_main(dummy_train_and_test_data, tmp_path):
     assert data["test"]["roc_auc"] == 1.0
 
 
-# TODO test all zeros predictions
-# TODO test all ones predictions
-# TODO test 50% ones predictions
+def test_main_all_zeros(dummy_train_and_test_data, tmp_path):
+    _, test_path = dummy_train_and_test_data
+    predictions_path = tmp_path / "predictions" / "predictions.csv"
+    predictions_path.parent.mkdir(parents=True, exist_ok=True)
+    figures = tmp_path / "figures"
+    reports = tmp_path / "reports"
+    df = pd.DataFrame(
+        columns=["timestamp", "button_state", "score"],
+        data=[
+            [0.0, 0, 0.0],
+            [1.0, 0, 0.0],
+            [2.0, 0, 0.0],
+            [3.0, 0, 0.0],
+        ],
+    )
+    df.to_csv(predictions_path, index=False)
+
+    runner = CliRunner()
+    result = runner.invoke(
+        evaluate_main,
+        [
+            str(test_path),
+            str(predictions_path.parent),
+            str(figures),
+            str(reports),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    output_files = list(reports.glob("*.json"))
+    output_files = [str(file.relative_to(tmp_path)) for file in output_files]
+    assert len(output_files) == 1
+    assert output_files == ["reports/test.json"]
+
+    data = json.loads((reports / "test.json").read_text())
+    for metrics in [
+        "precision_macro",
+        "recall_macro",
+        "f1-score_macro",
+        "roc_auc",
+    ]:
+        assert metrics in data["test"]
+    assert data["test"]["predicted_step_count"] == 0
+    assert data["test"]["precision_macro"] == 0.25
+    assert data["test"]["recall_macro"] == 0.5
+    assert pytest.approx(data["test"]["f1-score_macro"], rel=1e-4) == 0.3333
+    assert data["test"]["roc_auc"] == 0.5
