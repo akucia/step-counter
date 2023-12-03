@@ -24,7 +24,7 @@ stages:
       size: 506
   predict_test:
     cmd: "python src/step_counter/models/dnn_keras/predict.py data/steps/test/ models/dnn/base_export
-      reports/predictions/steps/test/\n"
+      reports/predictions/steps/test/ --model-type=keras\n"
     deps:
     - path: data/steps/test/
       hash: md5
@@ -113,8 +113,8 @@ stages:
       md5: 63b8f197f2c4857ce1da751ca35ae740
       size: 16992
   predict_tflite:
-    cmd: "python src/step_counter/models/dnn_keras/predict_tflite.py data/steps/test/
-      models/dnn/tflite/model_quantized.tflite reports/predictions/steps/test_tflite/\n"
+    cmd: "python src/step_counter/models/dnn_keras/predict.py data/steps/test/ models/dnn/tflite/model_quantized.tflite
+      reports/predictions/steps/test_tflite/ --model-type=tflite\n"
     deps:
     - path: data/steps/test/
       hash: md5

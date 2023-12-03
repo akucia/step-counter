@@ -22,6 +22,7 @@ stages:
       data/steps/test/
       models/dnn/base_export
       reports/predictions/steps/test/
+      --model-type=keras
     deps:
       - data/steps/test/
       - models/dnn
@@ -48,6 +49,7 @@ stages:
       data/steps/test/
       models/dnn/tflite/model_quantized.tflite
       reports/predictions/steps/test_tflite/
+      --model-type=tflite
     deps:
       - data/steps/test/
       - models/dnn/tflite/model_quantized.tflite
