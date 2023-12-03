@@ -50,6 +50,7 @@ packaging==23.1
     #   bokeh
     #   matplotlib
     #   pytest
+    #   pytest-sugar
 pandas==2.0.3
     # via
     #   bokeh
@@ -79,11 +80,17 @@ pyparsing==3.0.9
     # via matplotlib
 pyserial==3.5
     # via step-counter (pyproject.toml)
-pytest==7.4.0
+pytest==7.4.3
     # via
+    #   pytest-asyncio
     #   pytest-cov
+    #   pytest-sugar
     #   step-counter (pyproject.toml)
+pytest-asyncio==0.23.0
+    # via step-counter (pyproject.toml)
 pytest-cov==4.1.0
+    # via step-counter (pyproject.toml)
+pytest-sugar==0.9.7
     # via step-counter (pyproject.toml)
 python-dateutil==2.8.2
     # via
@@ -101,6 +108,8 @@ scipy==1.11.2
     # via scikit-learn
 six==1.16.0
     # via python-dateutil
+termcolor==2.4.0
+    # via pytest-sugar
 threadpoolctl==3.2.0
     # via scikit-learn
 tornado==6.3.3

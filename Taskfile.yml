@@ -55,4 +55,4 @@ tasks:
   test:
     desc: Run tests
     cmds:
-      - pytest -v --cov=src/step_counter --cov-report=term-missing --cov-fail-under=75 src/
+      - pytest -v --cov-report html:cov_html --cov=src/step_counter --cov-report=term-missing --cov-fail-under=75 src/
