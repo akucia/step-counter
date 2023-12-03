@@ -44,7 +44,7 @@ stages:
   predict_tflite:
     cmd: >
       python
-      src/step_counter/models/dnn_keras/predict_tflite.py
+      src/step_counter/models/dnn_keras/predict.py
       data/steps/test/
       models/dnn/tflite/model_quantized.tflite
       reports/predictions/steps/test_tflite/

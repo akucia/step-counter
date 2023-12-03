@@ -13,7 +13,7 @@ from bokeh.models import Button, ColumnDataSource
 from bokeh.plotting import curdoc, figure
 
 from step_counter.data_sources import BLESource, DummySource, MockSource, Source
-from step_counter.models.dnn_keras.predict_tflite import TFLiteDNNPredictor
+from step_counter.models.dnn_keras.predict import TFLiteDNNPredictor
 
 model_save_path = Path("models/dnn/tflite/model_quantized.tflite")
 model = TFLiteDNNPredictor(model_save_path)
