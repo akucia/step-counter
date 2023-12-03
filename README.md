@@ -8,10 +8,11 @@
 </p>
 
 # Metrics
-| Path                       | num_samples   | test.f1-score_macro   | test.precision_macro   | test.predicted_step_count   | test.recall_macro   | test.roc_auc   | test.support_macro   | test.target_step_count   | train.accuracy   | train.f1_macro   | train.precision_macro   | train.recall_macro   | validation.accuracy   | validation.f1_macro   | validation.precision_macro   | validation.recall_macro   |
-|----------------------------|---------------|-----------------------|------------------------|-----------------------------|---------------------|----------------|----------------------|--------------------------|------------------|------------------|-------------------------|----------------------|-----------------------|-----------------------|------------------------------|---------------------------|
-| reports/metrics/train.json | 7919          | -                     | -                      | -                           | -                   | -              | -                    | -                        | 0.87             | 0.79             | 0.76                    | 0.85                 | 0.86                  | 0.77                  | 0.74                         | 0.83                      |
-| reports/metrics/test.json  | -             | 0.82                  | 0.83                   | 52                          | 0.82                | 0.92           | 1585.0               | 45                       | -                | -                | -                       | -                    | -                     | -                     | -                            | -                         |
+| Path                             | num_samples   | test.f1-score_macro   | test.precision_macro   | test.predicted_step_count   | test.recall_macro   | test.roc_auc   | test.support_macro   | test.target_step_count   | train.accuracy   | train.f1_macro   | train.precision_macro   | train.recall_macro   | validation.accuracy   | validation.f1_macro   | validation.precision_macro   | validation.recall_macro   | validation.threshold_mean   | validation.threshold_std   |
+|----------------------------------|---------------|-----------------------|------------------------|-----------------------------|---------------------|----------------|----------------------|--------------------------|------------------|------------------|-------------------------|----------------------|-----------------------|-----------------------|------------------------------|---------------------------|-----------------------------|----------------------------|
+| reports/metrics/train.json       | 7919          | -                     | -                      | -                           | -                   | -              | -                    | -                        | 0.87             | 0.79             | 0.76                    | 0.85                 | 0.9                   | 0.8                   | 0.8                          | 0.8                       | 0.7                         | 0.05                       |
+| reports/metrics/test.json        | -             | 0.82                  | 0.83                   | 53                          | 0.81                | 0.92           | 1585.0               | 45                       | -                | -                | -                       | -                    | -                     | -                     | -                            | -                         | -                           | -                          |
+| reports/metrics_tflite/test.json | -             | 0.82                  | 0.83                   | 53                          | 0.81                | 0.92           | 1585.0               | 45                       | -                | -                | -                       | -                    | -                     | -                     | -                            | -                         | -                           | -                          |
 
 # Steps Graph
 ```mermaid
@@ -19,16 +20,28 @@ flowchart TD
 	node1["data/steps/test.dvc"]
 	node2["data/steps/train.dvc"]
 	node3["evaluate"]
-	node4["predict_test"]
-	node5["train"]
-	node6["update-metrics"]
+	node4["evaluate_tflite"]
+	node5["export_tflite"]
+	node6["predict_test"]
+	node7["predict_tflite"]
+	node8["train"]
+	node9["update-metrics"]
 	node1-->node3
 	node1-->node4
+	node1-->node6
+	node1-->node7
 	node2-->node5
-	node3-->node6
-	node4-->node3
-	node4-->node6
-	node5-->node4
+	node2-->node8
+	node3-->node9
+	node4-->node9
 	node5-->node6
+	node5-->node7
+	node6-->node3
+	node6-->node9
+	node7-->node4
+	node7-->node9
+	node8-->node5
+	node8-->node6
+	node8-->node9
 ```
 _graph_end_

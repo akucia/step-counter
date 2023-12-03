@@ -4,14 +4,13 @@ stages:
       python
       src/step_counter/models/dnn_keras/train.py
       data/steps/train/
-      models/dnn
+      models/dnn/base_export
       reports/metrics/train.json
       --seed=${seed}
     deps:
       - data/steps/train/
     outs:
-      - models/dnn
-      - models/dnn.png
+      - models/dnn/base_export
     metrics:
       - reports/metrics/train.json
     params:
@@ -21,13 +20,39 @@ stages:
       python
       src/step_counter/models/dnn_keras/predict.py
       data/steps/test/
-      models/dnn
+      models/dnn/base_export
       reports/predictions/steps/test/
     deps:
       - data/steps/test/
       - models/dnn
     outs:
       - reports/predictions/steps/test/
+  export_tflite:
+    cmd: >
+      python
+      src/step_counter/models/dnn_keras/export_tflite.py
+      models/dnn/base_export/
+      models/dnn/tflite/
+      data/steps/train/
+    deps:
+      - models/dnn/base_export
+      - data/steps/train/
+    outs:
+      - models/dnn/tflite/model.tflite
+      - models/dnn/tflite/model_optimized.tflite
+      - models/dnn/tflite/model_quantized.tflite
+  predict_tflite:
+    cmd: >
+      python
+      src/step_counter/models/dnn_keras/predict_tflite.py
+      data/steps/test/
+      models/dnn/tflite/model_quantized.tflite
+      reports/predictions/steps/test_tflite/
+    deps:
+      - data/steps/test/
+      - models/dnn/tflite/model_quantized.tflite
+    outs:
+      - reports/predictions/steps/test_tflite/
   evaluate:
     cmd: >
       python
@@ -55,6 +80,33 @@ stages:
     deps:
       - data/steps/test/
       - reports/predictions/steps/test/
+  evaluate_tflite:
+    cmd: >
+      python
+      src/step_counter/evaluate.py
+      data/steps/test/
+      reports/predictions/steps/test_tflite/
+      reports/figures_tflite/
+      reports/metrics_tflite/
+    plots:
+      - reports/figures_tflite/confusion_matrix.csv:
+          title: Confusion Matrix (Normalized)
+          template: confusion_normalized
+          x: actual
+          y: predicted
+      - reports/figures_tflite/precision_recall_curve.csv:
+          title: Precision-Recall Curve
+          x: recall
+          y: precision
+      - reports/figures_tflite/roc_curve.csv:
+          title: ROC Curve
+          x: fpr
+          y: tpr
+    metrics:
+      - reports/metrics_tflite/test.json
+    deps:
+      - data/steps/test/
+      - reports/predictions/steps/test_tflite/
   update-metrics:
     cmd: python update-metrics-table-and-graph.py
     deps:

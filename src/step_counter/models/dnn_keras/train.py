@@ -5,7 +5,7 @@ import os
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 import click
 import keras
@@ -126,6 +126,8 @@ def main(
     kf = KFold(n_splits=kfolds, shuffle=True, random_state=seed)
     splits = kf.split(X, y=y)
 
+    thresholds = []
+
     with ProcessPoolExecutor(max_workers=os.cpu_count() // 2) as executor:
         futures = []
         for train, test in splits:
@@ -139,11 +141,16 @@ def main(
                 executor.submit(_train_model, X_test, X_train, y_test, y_train, seed)
             )
         for future in tqdm(as_completed(futures), total=len(futures), desc="Training"):
-            task_scores = future.result()
+            task_scores, task_threshold = future.result()
+            thresholds.append(task_threshold)
             for metric, score in task_scores["train"].items():
                 scores["train"][metric].append(score)
             for metric, score in task_scores["val"].items():
                 scores["val"][metric].append(score)
+
+    threshold_mean, threshold_std = float(np.mean(thresholds)), float(
+        np.std(thresholds)
+    )
 
     train_scores = {
         metric: np.mean(scores) for metric, scores in scores["train"].items()
@@ -151,17 +158,19 @@ def main(
     validation_scores = {
         metric: np.mean(scores) for metric, scores in scores["val"].items()
     }
+    validation_scores["threshold_mean"] = threshold_mean
+    validation_scores["threshold_std"] = threshold_std
 
     table = Table(title="Average evaluation metrics")
     table.add_column("Metric")
     table.add_column("Train")
     table.add_column("Validation")
 
-    for metric in train_scores.keys() | validation_scores.keys():
+    for metric in sorted(train_scores.keys() | validation_scores.keys()):
         table.add_row(
             metric,
-            f"{train_scores.get(metric):.3f}",
-            f"{validation_scores.get(metric):.3f}",
+            f"{train_scores.get(metric, -1):.3f}",
+            f"{validation_scores.get(metric, -1):.3f}",
         )
     console = Console()
     console.print(table)
@@ -193,32 +202,17 @@ def main(
         class_weight=cw,
     )
     print("Evaluating model on entire training set...")
-    y_pred, y_target = _predict_on_dataset(model, train_ds, threshold=None)
-
-    print("Train set")
-    print(classification_report(y_target, y_pred > 0.5))
-
-    # optimize prediction threshold using f1 score
-    # todo extract as a function
-    scores = []
-    thresholds = np.arange(0, 1, 0.01)
-    for threshold in thresholds:
-        scores.append(f1_score(y_target, y_pred > threshold, average="macro"))
-
-    best_threshold, best_value = thresholds[np.argmax(scores)], np.max(scores)
-    print(f"Default threshold (0.5) f1-score_macro: {scores[50]:.3f}")
-    print(f"Best threshold: {best_threshold:.3f}, f1-score: {best_value:.3f}")
+    y_true, y_pred = _predict_on_dataset(model, train_ds, threshold=threshold_mean)
 
     print("Final evaluation on entire training set using best threshold...")
-    print(classification_report(y_target, y_pred > best_threshold))
+    print(classification_report(y_true, y_pred))
 
     # add layer with threshold to the model
     x = model(model.inputs)
-    threshold_scores = layers.Lambda(lambda output: output > best_threshold)(x)
+    threshold_scores = layers.Lambda(lambda output: output > threshold_mean)(x)
     model = keras.Model(
         inputs=model.inputs, outputs={"score": x, "decision": threshold_scores}
     )
-
     model.summary()
 
     # save model
@@ -228,13 +222,29 @@ def main(
 
     plot_model(
         model,
-        to_file=model_save_path.with_suffix(".png"),
+        to_file=model_save_path / "model.png",
         show_shapes=True,
         rankdir="LR",
     )
 
 
-def _train_model(X_test, X_train, y_test, y_train, seed):
+def _find_optimal_threshold(y_true, y_pred, scoring_fn: Callable = f1_score) -> float:
+    print("Finding optimal threshold...")
+    # optimize prediction threshold using f1 score
+    scores = []
+    thresholds = np.arange(0, 1, 0.01)
+    for threshold in thresholds:
+        scores.append(scoring_fn(y_true, y_pred > threshold, average="macro"))
+    best_threshold, best_value = thresholds[np.argmax(scores)], np.max(scores)
+    print(f"Default threshold (0.5) f1-score_macro: {scores[50]:.3f}")
+    print(f"Best threshold: {best_threshold:.3f}, f1-score: {best_value:.3f}")
+    return float(best_threshold)
+
+
+def _train_model(
+    X_test, X_train, y_test, y_train, seed
+) -> Tuple[Dict[str, Dict[str, float]], float]:
+    # TODO better typing for return value
     keras.utils.set_random_seed(seed)
     scores = {
         "train": dict(),
@@ -257,40 +267,48 @@ def _train_model(X_test, X_train, y_test, y_train, seed):
         verbose=0,
         class_weight=cw,
     )
-    y_pred, y_target = _predict_on_dataset(model, train_ds)
-    train_metrics = _calculate_metrics(y_pred, y_target)
+    train_eval_threshold = 0.5
+    y_true, y_pred = _predict_on_dataset(
+        model, train_ds, threshold=train_eval_threshold
+    )
+
+    train_metrics = _calculate_metrics(y_true, y_pred)
     for metric, score in train_metrics.items():
         scores["train"][metric] = score
-    y_pred, y_target = _predict_on_dataset(model, val_ds)
-    val_metrics = _calculate_metrics(y_pred, y_target)
+
+    y_true, y_pred = _predict_on_dataset(model, val_ds, threshold=None)
+
+    best_threshold = _find_optimal_threshold(y_true, y_pred)
+
+    val_metrics = _calculate_metrics(y_true, y_pred > best_threshold)
     for metric, score in val_metrics.items():
         scores["val"][metric] = score
-    return scores
+    return scores, best_threshold
 
 
-def _calculate_metrics(y_pred: np.ndarray, y_target: np.ndarray) -> Dict[str, float]:
+def _calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
     return {
-        "precision_macro": precision_score(y_target, y_pred, average="macro"),
-        "recall_macro": recall_score(y_target, y_pred, average="macro"),
-        "f1_macro": f1_score(y_target, y_pred, average="macro"),
-        "accuracy": accuracy_score(y_target, y_pred),
+        "precision_macro": precision_score(y_true, y_pred, average="macro"),
+        "recall_macro": recall_score(y_true, y_pred, average="macro"),
+        "f1_macro": f1_score(y_true, y_pred, average="macro"),
+        "accuracy": accuracy_score(y_true, y_pred),
     }
 
 
 def _predict_on_dataset(
     model: keras.Model, dataset: tf.data.Dataset, threshold: Optional[float] = 0.5
 ) -> Tuple[np.ndarray, np.ndarray]:
-    y_target = []
+    y_true = []
     y_pred = []
     for batch_x, batch_y in dataset:
-        y_target.append(batch_y.numpy())
+        y_true.append(batch_y.numpy())
         y_pred.append(model.predict(batch_x, verbose=0))
     y_pred = np.concatenate(y_pred)
     if threshold is not None:
         y_pred = (y_pred > threshold).astype(float)
 
-    y_target = np.concatenate(y_target)
-    return y_pred, y_target
+    y_true = np.concatenate(y_true)
+    return y_true, y_pred
 
 
 def _build_keras_model(

@@ -13,10 +13,10 @@ from bokeh.models import Button, ColumnDataSource
 from bokeh.plotting import curdoc, figure
 
 from step_counter.data_sources import BLESource, DummySource, MockSource, Source
-from step_counter.models.dnn_keras.predict import KerasDNNPredictor
+from step_counter.models.dnn_keras.predict_tflite import TFLiteDNNPredictor
 
-model_save_path = Path("models/dnn")
-model = KerasDNNPredictor(model_save_path)
+model_save_path = Path("models/dnn/tflite/model_quantized.tflite")
+model = TFLiteDNNPredictor(model_save_path)
 
 PLOT_ROLLOVER = 200
 # TODO change this global counter to something better
