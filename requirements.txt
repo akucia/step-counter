@@ -84,11 +84,14 @@ pytest==7.4.3
     # via
     #   pytest-asyncio
     #   pytest-cov
+    #   pytest-mock
     #   pytest-sugar
     #   step-counter (pyproject.toml)
 pytest-asyncio==0.23.0
     # via step-counter (pyproject.toml)
 pytest-cov==4.1.0
+    # via step-counter (pyproject.toml)
+pytest-mock==3.12.0
     # via step-counter (pyproject.toml)
 pytest-sugar==0.9.7
     # via step-counter (pyproject.toml)

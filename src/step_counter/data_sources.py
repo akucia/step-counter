@@ -41,7 +41,7 @@ class DummySource(Source):
         while True:
             await asyncio.sleep(0.05)
             timestamp = time.time()
-            data_xyz = np.random.random(3)
+            data_xyz = np.random.random(3).astype(np.float32)
             if np.random.random() > 0.9:
                 data_button = 1.0
             else:
@@ -76,7 +76,7 @@ class MockSource(Source):
             timestamp, x, y, z, button_state = line.split(",")
             timestamp = float(timestamp)
             data = np.array([float(x), float(y), float(z)])
-            yield timestamp, data, float(button_state)
+            yield timestamp, data.astype(np.float32), float(button_state)
             time_diff = timestamp - previous_timestamp
             previous_timestamp = timestamp
             # pause exact amount of time between two timestamps read from file to simulate real-time data
@@ -90,11 +90,11 @@ class BLESource(Source):
         self.device = device
         self.service_uuid = service_uuid
 
-    async def read_data(self) -> AsyncIterable[Tuple[float, np.ndarray]]:
+    async def read_data(self) -> AsyncIterable[Tuple[float, np.ndarray, float]]:
         """Read data from the BLE device indefinitely."""
         async with BleakClient(self.device.address) as client:
             while client.is_connected:
                 bytes_data = await client.read_gatt_char(self.service_uuid)
                 timestamp = time.time()
                 decoded_data = np.frombuffer(bytes_data, dtype=np.float32)
-                yield timestamp, decoded_data[0:3], decoded_data[3]
+                yield float(timestamp), decoded_data[0:3], float(decoded_data[3])
