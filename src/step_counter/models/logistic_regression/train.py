@@ -50,13 +50,12 @@ def main(
 
     X = data[["x", "y", "z"]]
     # add shift columns
-    X["x-1"] = X["x"].shift(1).fillna(0).values
-    X["y-1"] = X["y"].shift(1).fillna(0).values
-    X["z-1"] = X["z"].shift(1).fillna(0).values
-
-    X["x-2"] = X["x"].shift(2).fillna(0).values
-    X["y-2"] = X["y"].shift(2).fillna(0).values
-    X["z-2"] = X["z"].shift(2).fillna(0).values
+    X.loc[:, "x-1"] = X["x"].shift(1).fillna(0).values
+    X.loc[:, "y-1"] = X["y"].shift(1).fillna(0).values
+    X.loc[:, "z-1"] = X["z"].shift(1).fillna(0).values
+    X.loc[:, "x-2"] = X["x"].shift(2).fillna(0).values
+    X.loc[:, "y-2"] = X["y"].shift(2).fillna(0).values
+    X.loc[:, "z-2"] = X["z"].shift(2).fillna(0).values
 
     y = data["button_state"].values
 

@@ -17,13 +17,7 @@ from keras.src.layers import Normalization
 from keras.src.utils import plot_model
 from rich.console import Console
 from rich.table import Table
-from sklearn.metrics import (
-    accuracy_score,
-    classification_report,
-    f1_score,
-    precision_score,
-    recall_score,
-)
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.model_selection import KFold
 from sklearn.utils import class_weight
 from tqdm import tqdm
@@ -87,12 +81,30 @@ def encode_numerical_feature(
     default=5,
     help="Number of folds for CV training",
 )
+@click.option(
+    "--batch-size",
+    "-b",
+    "batch_size",
+    type=int,
+    default=512,
+    help="Batch size for training",
+)
+@click.option(
+    "--epochs",
+    "-e",
+    "epochs",
+    type=int,
+    default=150,
+    help="Number of epochs for training",
+)
 def main(
     data_path: Path,
     model_save_path: Path,
     metrics_path: Path,
     seed: int,
     kfolds: int,
+    batch_size: int,
+    epochs: int,
 ):
     """
         Train and save logistic regression model
@@ -109,13 +121,12 @@ def main(
 
     X = data[["x", "y", "z"]]
     # add shift columns
-    X["x-1"] = X["x"].shift(1).fillna(0).values
-    X["y-1"] = X["y"].shift(1).fillna(0).values
-    X["z-1"] = X["z"].shift(1).fillna(0).values
-
-    X["x-2"] = X["x"].shift(2).fillna(0).values
-    X["y-2"] = X["y"].shift(2).fillna(0).values
-    X["z-2"] = X["z"].shift(2).fillna(0).values
+    X.loc[:, "x-1"] = X["x"].shift(1).fillna(0).values
+    X.loc[:, "y-1"] = X["y"].shift(1).fillna(0).values
+    X.loc[:, "z-1"] = X["z"].shift(1).fillna(0).values
+    X.loc[:, "x-2"] = X["x"].shift(2).fillna(0).values
+    X.loc[:, "y-2"] = X["y"].shift(2).fillna(0).values
+    X.loc[:, "z-2"] = X["z"].shift(2).fillna(0).values
 
     y = data["button_state"].values.reshape(-1, 1)
 
@@ -127,8 +138,8 @@ def main(
     splits = kf.split(X, y=y)
 
     thresholds = []
-
-    with ProcessPoolExecutor(max_workers=os.cpu_count() // 2) as executor:
+    max_workers = min(os.cpu_count() // 2, kfolds)
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = []
         for train, test in splits:
             X_train, X_test, y_train, y_test = (
@@ -137,11 +148,23 @@ def main(
                 y[train],
                 y[test],
             )
-            futures.append(
-                executor.submit(_train_model, X_test, X_train, y_test, y_train, seed)
-            )
+
+            if not (X_train.empty or X_test.empty):
+                futures.append(
+                    executor.submit(
+                        _train_model,
+                        X_test,
+                        X_train,
+                        y_test,
+                        y_train,
+                        seed,
+                        batch_size,
+                        epochs,
+                    )
+                )
+        print(f"Training {len(futures)} models...")
         for future in tqdm(as_completed(futures), total=len(futures), desc="Training"):
-            task_scores, task_threshold = future.result()
+            task_scores, task_threshold, _ = future.result()
             thresholds.append(task_threshold)
             for metric, score in task_scores["train"].items():
                 scores["train"][metric].append(score)
@@ -187,25 +210,7 @@ def main(
 
     # re-train the model on the entire training set
     print("Training model on entire training set...")
-    train_ds = dataframes_to_dataset(X, y)
-    train_ds = train_ds.batch(512)
-    model = _build_keras_model(train_ds, features)
-    cw = class_weight.compute_class_weight(
-        "balanced", classes=np.unique(y), y=y.flatten()
-    )
-    cw = dict(enumerate(cw))
-
-    model.fit(
-        train_ds,
-        epochs=150,
-        verbose=0,
-        class_weight=cw,
-    )
-    print("Evaluating model on entire training set...")
-    y_true, y_pred = _predict_on_dataset(model, train_ds, threshold=threshold_mean)
-
-    print("Final evaluation on entire training set using best threshold...")
-    print(classification_report(y_true, y_pred))
+    _, _, model = _train_model(X, X, y, y, seed, batch_size, epochs)
 
     # add layer with threshold to the model
     x = model(model.inputs)
@@ -232,7 +237,7 @@ def _find_optimal_threshold(y_true, y_pred, scoring_fn: Callable = f1_score) -> 
     print("Finding optimal threshold...")
     # optimize prediction threshold using f1 score
     scores = []
-    thresholds = np.arange(0, 1, 0.01)
+    thresholds = np.arange(0.01, 0.99, 0.01)
     for threshold in thresholds:
         scores.append(scoring_fn(y_true, y_pred > threshold, average="macro"))
     best_threshold, best_value = thresholds[np.argmax(scores)], np.max(scores)
@@ -242,8 +247,8 @@ def _find_optimal_threshold(y_true, y_pred, scoring_fn: Callable = f1_score) -> 
 
 
 def _train_model(
-    X_test, X_train, y_test, y_train, seed
-) -> Tuple[Dict[str, Dict[str, float]], float]:
+    X_test, X_train, y_test, y_train, seed, batch_size, epochs
+) -> Tuple[Dict[str, Dict[str, float]], float, keras.Model]:
     # TODO better typing for return value
     keras.utils.set_random_seed(seed)
     scores = {
@@ -252,17 +257,23 @@ def _train_model(
     }
     train_ds = dataframes_to_dataset(X_train, y_train)
     val_ds = dataframes_to_dataset(X_test, y_test)
-    train_ds = train_ds.batch(512)  # TODO change to script args
-    val_ds = val_ds.batch(512)
+    train_ds = train_ds.batch(batch_size)
+    val_ds = val_ds.batch(batch_size)
 
     model = _build_keras_model(train_ds, features)
-    cw = class_weight.compute_class_weight(
-        "balanced", classes=np.unique(y_train), y=y_train.flatten()
-    )
+    classes = np.unique(y_train)
+    if (classes == np.array([0])).all():
+        cw = {0: 1, 1: 1}
+    elif (classes == np.array([1])).all():
+        cw = {0: 1, 1: 1}
+    else:
+        cw = class_weight.compute_class_weight(
+            "balanced", classes=np.unique(y_train), y=y_train.flatten()
+        )
     cw = dict(enumerate(cw))
     model.fit(
         train_ds,
-        epochs=150,
+        epochs=epochs,
         validation_data=val_ds,
         verbose=0,
         class_weight=cw,
@@ -283,7 +294,7 @@ def _train_model(
     val_metrics = _calculate_metrics(y_true, y_pred > best_threshold)
     for metric, score in val_metrics.items():
         scores["val"][metric] = score
-    return scores, best_threshold
+    return scores, best_threshold, model
 
 
 def _calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:

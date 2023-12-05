@@ -15,7 +15,7 @@ stages:
     outs:
     - path: models/dnn/base_export
       hash: md5
-      md5: 15a3422244ae2cff3c2a68848d1b0cdc.dir
+      md5: bde42bb64c933071e600c47ecc36ca1f.dir
       size: 594083
       nfiles: 6
     - path: reports/metrics/train.json
@@ -33,7 +33,7 @@ stages:
       nfiles: 2
     - path: models/dnn
       hash: md5
-      md5: d68af88f2849c2645eaf6343003eab46.dir
+      md5: 7028f2264f9dd312385a305180ed2f02.dir
       size: 756248
       nfiles: 10
     outs:
@@ -96,7 +96,7 @@ stages:
       nfiles: 8
     - path: models/dnn/base_export
       hash: md5
-      md5: 15a3422244ae2cff3c2a68848d1b0cdc.dir
+      md5: bde42bb64c933071e600c47ecc36ca1f.dir
       size: 594083
       nfiles: 6
     outs:
