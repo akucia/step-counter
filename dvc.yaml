@@ -25,7 +25,7 @@ stages:
       --model-type=keras
     deps:
       - data/steps/test/
-      - models/dnn
+      - models/dnn/base_export/
     outs:
       - reports/predictions/steps/test/
   export_tflite:
@@ -55,6 +55,12 @@ stages:
       - models/dnn/tflite/model_quantized.tflite
     outs:
       - reports/predictions/steps/test_tflite/
+  convert_tflite_to_c:
+    cmd: xxd -i models/dnn/tflite/model_quantized.tflite > models/dnn/tflite/model_quantized.cc
+    deps:
+      - models/dnn/tflite/model_quantized.tflite
+    outs:
+      - models/dnn/tflite/model_quantized.cc
   evaluate:
     cmd: >
       python

@@ -31,11 +31,11 @@ stages:
       md5: 74bf42681c55e319ec6fb42c98ea9f74.dir
       size: 88024
       nfiles: 2
-    - path: models/dnn
+    - path: models/dnn/base_export/
       hash: md5
-      md5: 7028f2264f9dd312385a305180ed2f02.dir
-      size: 756248
-      nfiles: 10
+      md5: bde42bb64c933071e600c47ecc36ca1f.dir
+      size: 594083
+      nfiles: 6
     outs:
     - path: reports/predictions/steps/test/
       hash: md5
@@ -162,3 +162,15 @@ stages:
       hash: md5
       md5: fb9f3faa42d0e439c7497ff0bd06f250
       size: 266
+  convert_tflite_to_c:
+    cmd: xxd -i models/dnn/tflite/model_quantized.tflite > models/dnn/tflite/model_quantized.cc
+    deps:
+    - path: models/dnn/tflite/model_quantized.tflite
+      hash: md5
+      md5: 63b8f197f2c4857ce1da751ca35ae740
+      size: 16992
+    outs:
+    - path: models/dnn/tflite/model_quantized.cc
+      hash: md5
+      md5: 720d3a4c53e28ddb1f7996618f35ef29
+      size: 104914
