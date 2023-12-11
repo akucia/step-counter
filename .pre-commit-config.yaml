@@ -1,12 +1,12 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
   - repo: https://github.com/psf/black
-    rev: 23.7.0
+    rev: 23.11.0
     hooks:
       - id: black
       - id: black-jupyter
@@ -20,7 +20,7 @@ repos:
     hooks:
       - id: flake8
   - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+    rev: 5.13.1
     hooks:
       - id: isort
   - repo: https://github.com/kynan/nbstripout
@@ -28,13 +28,13 @@ repos:
     hooks:
       - id: nbstripout
   - repo: https://github.com/econchick/interrogate/
-    rev: 1.5.0
+    rev: 3aa94a6
     hooks:
       - id: interrogate
         args: [ "-v", "src/" ]
         pass_filenames: false
   - repo: https://github.com/iterative/dvc
-    rev: 3.17.0
+    rev: 3.33.3
     hooks:
       - id: dvc-pre-commit
         language_version: python3

@@ -56,11 +56,11 @@ stages:
     outs:
       - reports/predictions/steps/test_tflite/
   convert_tflite_to_c:
-    cmd: xxd -i models/dnn/tflite/model_quantized.tflite > models/dnn/tflite/model_quantized.cc
+    cmd: xxd -i models/dnn/tflite/model_quantized.tflite > models/dnn/tflite/model_quantized.h
     deps:
       - models/dnn/tflite/model_quantized.tflite
     outs:
-      - models/dnn/tflite/model_quantized.cc
+      - models/dnn/tflite/model_quantized.h
   evaluate:
     cmd: >
       python

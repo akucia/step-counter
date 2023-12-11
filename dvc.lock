@@ -15,13 +15,13 @@ stages:
     outs:
     - path: models/dnn/base_export
       hash: md5
-      md5: bde42bb64c933071e600c47ecc36ca1f.dir
-      size: 594083
+      md5: 794527ef5cc7f2b41b07710be0d08fd1.dir
+      size: 609115
       nfiles: 6
     - path: reports/metrics/train.json
       hash: md5
-      md5: c9171a3097022c4df0a46ccf528adf7a
-      size: 506
+      md5: 21f0dfbb725730357320b69de9222922
+      size: 505
   predict_test:
     cmd: "python src/step_counter/models/dnn_keras/predict.py data/steps/test/ models/dnn/base_export
       reports/predictions/steps/test/ --model-type=keras\n"
@@ -33,22 +33,22 @@ stages:
       nfiles: 2
     - path: models/dnn/base_export/
       hash: md5
-      md5: bde42bb64c933071e600c47ecc36ca1f.dir
-      size: 594083
+      md5: 794527ef5cc7f2b41b07710be0d08fd1.dir
+      size: 609115
       nfiles: 6
     outs:
     - path: reports/predictions/steps/test/
       hash: md5
-      md5: ea6237d87fc9725b5302b47af22795b4.dir
-      size: 118939
+      md5: 1cc4747b3ef2b58d4b43cf44ef04b30a.dir
+      size: 118941
       nfiles: 2
   update-metrics:
     cmd: python update-metrics-table-and-graph.py
     deps:
     - path: reports
       hash: md5
-      md5: 0ec400682cd6719da5f7a871f7fce5a0.dir
-      size: 485097
+      md5: 9c04e52d78528f11d4ab09454cde89f0.dir
+      size: 485041
       nfiles: 18
     - path: update-metrics-table-and-graph.py
       hash: md5
@@ -65,8 +65,8 @@ stages:
       nfiles: 2
     - path: reports/predictions/steps/test/
       hash: md5
-      md5: ea6237d87fc9725b5302b47af22795b4.dir
-      size: 118939
+      md5: 1cc4747b3ef2b58d4b43cf44ef04b30a.dir
+      size: 118941
       nfiles: 2
     outs:
     - path: reports/figures/confusion_matrix.csv
@@ -75,15 +75,15 @@ stages:
       size: 24174
     - path: reports/figures/precision_recall_curve.csv
       hash: md5
-      md5: caeb8d89f7800003953840d369f539c6
-      size: 87565
+      md5: 0133c03c18ed7c800b019aaa4a134735
+      size: 87535
     - path: reports/figures/roc_curve.csv
       hash: md5
-      md5: de6069850f1c7caf9442adb41fb254ef
-      size: 11274
+      md5: 651820737e987bb7376936e6fb739575
+      size: 11276
     - path: reports/metrics/test.json
       hash: md5
-      md5: fb9f3faa42d0e439c7497ff0bd06f250
+      md5: 32cabfb53f4f7fade11dfedbbd3bbfdb
       size: 266
   export_tflite:
     cmd: "python src/step_counter/models/dnn_keras/export_tflite.py models/dnn/base_export/
@@ -96,22 +96,22 @@ stages:
       nfiles: 8
     - path: models/dnn/base_export
       hash: md5
-      md5: bde42bb64c933071e600c47ecc36ca1f.dir
-      size: 594083
+      md5: 794527ef5cc7f2b41b07710be0d08fd1.dir
+      size: 609115
       nfiles: 6
     outs:
     - path: models/dnn/tflite/model.tflite
       hash: md5
-      md5: 1fa393ab0138e9478765788718d921c6
-      size: 16992
+      md5: 9e79dc3da80000fc57225444065544c4
+      size: 17312
     - path: models/dnn/tflite/model_optimized.tflite
       hash: md5
-      md5: a314e6882ec7fd3dda8ac0ad4a714835
-      size: 13488
+      md5: 1048776bf72bcbefe6ee653e8fc18ebe
+      size: 13808
     - path: models/dnn/tflite/model_quantized.tflite
       hash: md5
-      md5: 63b8f197f2c4857ce1da751ca35ae740
-      size: 16992
+      md5: 043151c1fc623d5d139f63e6e631b6bb
+      size: 17312
   predict_tflite:
     cmd: "python src/step_counter/models/dnn_keras/predict.py data/steps/test/ models/dnn/tflite/model_quantized.tflite
       reports/predictions/steps/test_tflite/ --model-type=tflite\n"
@@ -123,13 +123,13 @@ stages:
       nfiles: 2
     - path: models/dnn/tflite/model_quantized.tflite
       hash: md5
-      md5: 63b8f197f2c4857ce1da751ca35ae740
-      size: 16992
+      md5: 043151c1fc623d5d139f63e6e631b6bb
+      size: 17312
     outs:
     - path: reports/predictions/steps/test_tflite/
       hash: md5
-      md5: e53308bd9ad59ac97ab891231435fa21.dir
-      size: 118931
+      md5: 7ab6c5541c247cd92e471e7d4b2bbb15.dir
+      size: 118930
       nfiles: 2
   evaluate_tflite:
     cmd: "python src/step_counter/evaluate.py data/steps/test/ reports/predictions/steps/test_tflite/
@@ -142,8 +142,8 @@ stages:
       nfiles: 2
     - path: reports/predictions/steps/test_tflite/
       hash: md5
-      md5: e53308bd9ad59ac97ab891231435fa21.dir
-      size: 118931
+      md5: 7ab6c5541c247cd92e471e7d4b2bbb15.dir
+      size: 118930
       nfiles: 2
     outs:
     - path: reports/figures_tflite/confusion_matrix.csv
@@ -152,25 +152,25 @@ stages:
       size: 24174
     - path: reports/figures_tflite/precision_recall_curve.csv
       hash: md5
-      md5: 8b68f093f3ce2aab257a1b68e77ae632
-      size: 87549
+      md5: 5e785e69f919faef868c46e85455742e
+      size: 87519
     - path: reports/figures_tflite/roc_curve.csv
       hash: md5
-      md5: 759becb0ab8edb7c6a6147a658d7d2ff
-      size: 11270
+      md5: eea81c08536a1f062805052f3616f155
+      size: 11272
     - path: reports/metrics_tflite/test.json
       hash: md5
-      md5: fb9f3faa42d0e439c7497ff0bd06f250
+      md5: 32cabfb53f4f7fade11dfedbbd3bbfdb
       size: 266
   convert_tflite_to_c:
-    cmd: xxd -i models/dnn/tflite/model_quantized.tflite > models/dnn/tflite/model_quantized.cc
+    cmd: xxd -i models/dnn/tflite/model_quantized.tflite > models/dnn/tflite/model_quantized.h
     deps:
     - path: models/dnn/tflite/model_quantized.tflite
       hash: md5
-      md5: 63b8f197f2c4857ce1da751ca35ae740
-      size: 16992
+      md5: 043151c1fc623d5d139f63e6e631b6bb
+      size: 17312
     outs:
-    - path: models/dnn/tflite/model_quantized.cc
+    - path: models/dnn/tflite/model_quantized.h
       hash: md5
-      md5: 720d3a4c53e28ddb1f7996618f35ef29
-      size: 104914
+      md5: 1f8dd9bee5d32a1032a73b487b4ae26a
+      size: 106888

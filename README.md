@@ -17,31 +17,32 @@
 # Steps Graph
 ```mermaid
 flowchart TD
-	node1["data/steps/test.dvc"]
-	node2["data/steps/train.dvc"]
-	node3["evaluate"]
-	node4["evaluate_tflite"]
-	node5["export_tflite"]
-	node6["predict_test"]
-	node7["predict_tflite"]
-	node8["train"]
-	node9["update-metrics"]
-	node1-->node3
-	node1-->node4
-	node1-->node6
-	node1-->node7
+	node1["convert_tflite_to_c"]
+	node2["data/steps/test.dvc"]
+	node3["data/steps/train.dvc"]
+	node4["evaluate"]
+	node5["evaluate_tflite"]
+	node6["export_tflite"]
+	node7["predict_test"]
+	node8["predict_tflite"]
+	node9["train"]
+	node10["update-metrics"]
+	node2-->node4
 	node2-->node5
+	node2-->node7
 	node2-->node8
+	node3-->node6
 	node3-->node9
-	node4-->node9
-	node5-->node6
-	node5-->node7
-	node6-->node3
-	node6-->node9
+	node4-->node10
+	node5-->node10
+	node6-->node1
+	node6-->node8
 	node7-->node4
-	node7-->node9
+	node7-->node10
 	node8-->node5
-	node8-->node6
-	node8-->node9
+	node8-->node10
+	node9-->node6
+	node9-->node7
+	node9-->node10
 ```
 _graph_end_

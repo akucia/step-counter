@@ -15,6 +15,7 @@ import tensorflow as tf
 from keras import layers
 from keras.src.layers import Normalization
 from keras.src.utils import plot_model
+from more_itertools import batched
 from rich.console import Console
 from rich.table import Table
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
@@ -214,7 +215,9 @@ def main(
 
     # add layer with threshold to the model
     x = model(model.inputs)
-    threshold_scores = layers.Lambda(lambda output: output > threshold_mean)(x)
+    threshold_scores = layers.Lambda(
+        lambda output: output > threshold_mean, name="decision"
+    )(x)
     model = keras.Model(
         inputs=model.inputs, outputs={"score": x, "decision": threshold_scores}
     )
@@ -233,7 +236,16 @@ def main(
     )
 
 
-def _find_optimal_threshold(y_true, y_pred, scoring_fn: Callable = f1_score) -> float:
+def _find_optimal_threshold(
+    y_true: np.ndarray, y_pred: np.ndarray, scoring_fn: Callable = f1_score
+) -> float:
+    """Finds optimal threshold for binary classification using scoring_fn
+
+    Args:
+        y_true (np.ndarray): true labels
+        y_pred (np.ndarray): predicted labels
+        scoring_fn (Callable, optional): scoring function. Defaults to f1_score.
+    """
     print("Finding optimal threshold...")
     # optimize prediction threshold using f1 score
     scores = []
@@ -247,8 +259,26 @@ def _find_optimal_threshold(y_true, y_pred, scoring_fn: Callable = f1_score) -> 
 
 
 def _train_model(
-    X_test, X_train, y_test, y_train, seed, batch_size, epochs
+    X_test: pd.DataFrame,
+    X_train: pd.DataFrame,
+    y_test: pd.DataFrame,
+    y_train: pd.DataFrame,
+    seed: int,
+    batch_size: int,
+    epochs: int,
 ) -> Tuple[Dict[str, Dict[str, float]], float, keras.Model]:
+    """Trains and evaluates a model
+
+    Args:
+        X_test (pd.DataFrame): test features
+        X_train (pd.DataFrame): train features
+        y_test (pd.DataFrame): test target
+        y_train (pd.DataFrame): train target
+        seed (int): random seed
+        batch_size (int): batch size
+        epochs (int): number of epochs
+
+    """
     # TODO better typing for return value
     keras.utils.set_random_seed(seed)
     scores = {
@@ -351,8 +381,18 @@ def _build_keras_model(
     encoded_features["magnitude-2"] = layers.Lambda(
         lambda x: tf.sqrt(x["x-2"] ** 2 + x["y-2"] ** 2 + x["z-2"] ** 2)
     )(encoded_features)
+    # limit the number of features in a single concat layer
+    # due to TFLite Micro limitations
+    # https://github.com/tensorflow/tflite-micro/blob/5f5fcc8af6b059a41f04b26e6b575558aea11fd1/tensorflow/lite/micro/kernels/concatenation.cc#L143
 
-    all_features = layers.concatenate(encoded_features.values())
+    all_feature_layers = encoded_features.values()
+    batched_features = []
+    feature_layers_concat_size = 10
+
+    for batch in batched(all_feature_layers, feature_layers_concat_size):
+        batched_features.append(layers.concatenate(batch))
+
+    all_features = layers.concatenate(batched_features)
     x = all_features
     for _ in range(num_layers):
         x = layers.Dense(units, activation="relu")(x)

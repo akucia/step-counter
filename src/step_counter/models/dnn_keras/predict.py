@@ -26,6 +26,10 @@ class KerasDNNPredictor:
 
         self.input = np.array([(0, 0, 0), (0, 0, 0), (0, 0, 0)]).astype(np.float32)
 
+    def reset(self):
+        """Reset input data"""
+        self.input = np.array([(0, 0, 0), (0, 0, 0), (0, 0, 0)]).astype(np.float32)
+
     def predict(self, x, y, z: float) -> Tuple[float, float]:
         """Predict button state from accelerometer data
 
@@ -83,6 +87,10 @@ class TFLiteDNNPredictor:
             for input in input_details
         }
 
+        self.input = np.array([(0, 0, 0), (0, 0, 0), (0, 0, 0)]).astype(np.float32)
+
+    def reset(self):
+        """Reset input data"""
         self.input = np.array([(0, 0, 0), (0, 0, 0), (0, 0, 0)]).astype(np.float32)
 
     def predict(self, x, y, z: float) -> Tuple[float, float]:
@@ -156,6 +164,7 @@ def main(
     start = time.time()
     total = 0
     for file in data_path.glob("*.csv"):
+        model.reset()
         print(f"Predicting on file: {file}")
         df = load_data_as_dataframe(file.parent, glob_pattern=file.name)
         # iterate over rows of df and make predictions for each step

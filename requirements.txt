@@ -36,6 +36,8 @@ matplotlib==3.7.2
     # via step-counter (pyproject.toml)
 mdurl==0.1.2
     # via markdown-it-py
+more-itertools==10.1.0
+    # via step-counter (pyproject.toml)
 numpy==1.25.2
     # via
     #   bokeh

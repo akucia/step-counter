@@ -13,3 +13,4 @@ scikit-learn
 click
 rich
 Pillow==10.0.1
+more-itertools==10.1.0
