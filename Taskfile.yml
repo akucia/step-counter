@@ -12,16 +12,17 @@ tasks:
       - arduino-cli lib install Arduino_APDS9960
   arduino-accelerometer-compile:
     cmds:
-      - arduino-cli --fqbn arduino:mbed_nano:nano33ble compile -e ./arduino/Accelerometer
+      - arduino-cli --fqbn arduino:mbed_nano:nano33ble compile -e ./arduino/Accelerometer --log
     sources:
       - ./arduino/Accelerometer/Accelerometer.ino
+      - ./arduino/Accelerometer/Model.h
     generates:
       - ./arduino/Accelerometer/build/**/Accelerometer.ino.*
   arduino-accelerometer-upload:
     deps:
       - arduino-accelerometer-compile
     cmds:
-      - arduino-cli upload -p /dev/cu.usbmodem141101 --fqbn arduino:mbed_nano:nano33ble ./arduino/Accelerometer
+      - arduino-cli upload -p /dev/cu.usbmodem144101 --fqbn arduino:mbed_nano:nano33ble ./arduino/Accelerometer
   arduino-buttons-compile:
     cmds:
       - arduino-cli --fqbn arduino:mbed_nano:nano33ble compile -e ./arduino/Buttons
@@ -55,4 +56,4 @@ tasks:
   test:
     desc: Run tests
     cmds:
-      - pytest -v --cov-report html:cov_html --cov=src/step_counter --cov-report=term-missing --cov-fail-under=75 src/
+      - pytest -v --cov-report html:cov_html --cov=src/step_counter --cov-report=term-missing --cov-fail-under=75 --lf --ff src/

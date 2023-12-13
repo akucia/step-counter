@@ -97,4 +97,6 @@ class BLESource(Source):
                 bytes_data = await client.read_gatt_char(self.service_uuid)
                 timestamp = time.time()
                 decoded_data = np.frombuffer(bytes_data, dtype=np.float32)
-                yield float(timestamp), decoded_data[0:3], float(decoded_data[3])
+                yield float(timestamp), decoded_data[0:3], float(
+                    decoded_data[3]
+                ), decoded_data[4], decoded_data[5]

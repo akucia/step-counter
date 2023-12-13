@@ -71,6 +71,7 @@ def main(model_path: Path, export_path: Path, data_path: Path):
         for data in dataset:
             yield data
 
+    converter = tf.lite.TFLiteConverter.from_saved_model(model_path)
     converter.representative_dataset = representative_dataset
     converter.optimizations = [tf.lite.Optimize.EXPERIMENTAL_SPARSITY]
     converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]

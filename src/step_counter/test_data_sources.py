@@ -51,12 +51,12 @@ async def test_ble_source(mocker):
     mocker.patch("bleak.BleakClient.start_notify", return_value=None)
     mocker.patch("bleak.BleakClient.stop_notify", return_value=None)
     mocker.patch("bleak.BleakClient.disconnect", return_value=None)
-    mock_data = np.zeros(4, dtype=np.float32).tobytes()
+    mock_data = np.zeros(6, dtype=np.float32).tobytes()
     mocker.patch("bleak.BleakClient.read_gatt_char", return_value=mock_data)
     device = BLEDevice("00:00:00:00:00:00", "Test Device", 0, 0)
     source = BLESource(device, "00000000-0000-0000-0000-000000000000")
     data = []
-    async for timestamp, data_xyz, data_button in source.read_data():
+    async for timestamp, data_xyz, data_button, *_ in source.read_data():
         assert isinstance(timestamp, float)
         assert isinstance(data_xyz, np.ndarray)
         assert data_xyz.dtype == np.float32

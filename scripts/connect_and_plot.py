@@ -42,13 +42,16 @@ async def set_title(title):
 @without_document_lock
 async def use_ble_source():
     service_uuid = os.environ["SERVICE_UUID"]
-    device_uuid = os.environ["DEVICE_UUID"]
+    device_name = os.environ["DEVICE_NAME"]
     doc.add_next_tick_callback(partial(set_title, title="Scanning..."))
     source = None
     while source is None:
-        print(f"Scanning for source with UUID {device_uuid}")
+        print(f"Scanning for source with name {device_name}")
         devices = await BleakScanner.discover()
-        selected_device = [d for d in devices if device_uuid in d.metadata["uuids"]]
+        for d in devices:
+            print(d)
+        selected_device = [d for d in devices if device_name in str(d.name)]
+        device_uuid = selected_device[0].address
         if not selected_device:
             print(f"Device with UUID {device_uuid} not found")
             doc.add_next_tick_callback(partial(set_title, title="Device not found"))
@@ -100,13 +103,17 @@ def read_queue_and_save_data():
 
 @without_document_lock
 async def read_data_from_source(source: Source):
-    async for timestamp, accelerometer_data, button_data in source.read_data():
+    async for timestamp, accelerometer_data, button_data, model_decision, model_score in source.read_data():
         data_queue.put((timestamp, accelerometer_data))
-
-        button_pred, button_pred_score = model.predict(
-            accelerometer_data[0], accelerometer_data[1], accelerometer_data[2]
+        print(
+            f"Timestamp: {timestamp}, accelerometer data: {accelerometer_data}, "
+            f"button state: {button_data}, model decision: {model_decision}, model score: {model_score}"
         )
-        print(f"Button state: {button_data}, prediction: {button_pred_score:.3f}")
+
+        # button_pred, button_pred_score = model.predict(
+        #     accelerometer_data[0], accelerometer_data[1], accelerometer_data[2]
+        # )
+        # print(f"Button state: {button_data}, prediction: {button_pred_score:.3f}")
 
         doc.add_next_tick_callback(
             partial(
@@ -115,8 +122,8 @@ async def read_data_from_source(source: Source):
                 y=accelerometer_data[1],
                 z=accelerometer_data[2],
                 button_state=button_data,
-                button_pred_score=button_pred_score,
-                button_pred=button_pred,
+                button_pred_score=0,
+                button_pred=0,
             )
         )
 
@@ -169,6 +176,6 @@ button = Button(label="Save data to file")
 button.on_event(ButtonClick, read_queue_and_save_data)
 
 doc.add_root(column(row(p1, p2), button))
-doc.add_next_tick_callback(use_mock_source)
+doc.add_next_tick_callback(use_ble_source)
 
 # TODO add button to start recording to file
