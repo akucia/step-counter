@@ -122,8 +122,8 @@ async def read_data_from_source(source: Source):
                 y=accelerometer_data[1],
                 z=accelerometer_data[2],
                 button_state=button_data,
-                button_pred_score=0,
-                button_pred=0,
+                button_pred_score=model_score,
+                button_pred=model_decision,
             )
         )
 

@@ -1,9 +1,9 @@
 #include "Model.h"
-
 #include <ArduinoBLE.h>
 #include <Arduino_APDS9960.h>
 #include <Arduino_LSM9DS1.h>
 #include <TensorFlowLite.h>
+#include <deque>
 
 #include "tensorflow/lite/core/c/common.h"
 #include "tensorflow/lite/micro/all_ops_resolver.h"
@@ -29,6 +29,11 @@ const char *deviceServiceCharacteristicUuid = "551de921-bbaa-4e0a-9374-3e30e88a9
 
 BLEService accelerometerService(deviceServiceUuid);
 BLECharacteristic accelerometerCharacteristic(deviceServiceCharacteristicUuid, BLERead | BLEWrite, 24);
+// inputs will held the last 3 values of the accelerometer
+// x-2, y-2, z-2
+// x-1, y-1, z-1
+// x, y, z
+std::deque<std::vector<float>> inputs(3, std::vector<float>(3, 0.0));
 
 union DeviceData {
     float values[6];
@@ -158,20 +163,35 @@ void loop() {
         while (central.connected()) {
             digitalWrite(LEDR, HIGH);
             DeviceData data = getAccelerometer();
-            float inputs[9] = {
-                0.,          // y-2
-                0.111450195, // y-1
-                0.13586426,  // y
-                -0.42260742, // x-1
-                -0.46069336, // x
-                0.90930176,  // z-1
-                0.,          // z-2
-                0.8876953,   // z
-                0.,          // x-2
-            };
-            for (int i = 0; i < 9; i++) {
-                interpreter->input(i)->data.f[0] = inputs[i];
-            }
+            //            float inputs[9] = {
+            //                0.,          // y-2
+            //                0.111450195, // y-1
+            //                0.13586426,  // y
+            //                -0.42260742, // x-1
+            //                -0.46069336, // x
+            //                0.90930176,  // z-1
+            //                0.,          // z-2
+            //                0.8876953,   // z
+            //                0.,          // x-2
+            //            };
+
+            // Move inputs one step back
+            inputs.pop_front();
+            // Set new values
+            inputs.push_back(std::vector<float>{data.values[0], data.values[1], data.values[2]});
+
+            // Inputs are permuted, here's the order:
+            // y-2, y-1, y, x-1, x, z-1, z-2, z, x-2
+            interpreter->input(0)->data.f[0] = inputs[0][1]; // y-2
+            interpreter->input(1)->data.f[0] = inputs[1][1]; // y-1
+            interpreter->input(2)->data.f[0] = inputs[2][1]; // y
+            interpreter->input(3)->data.f[0] = inputs[1][0]; // x-1
+            interpreter->input(4)->data.f[0] = inputs[2][0]; // x
+            interpreter->input(5)->data.f[0] = inputs[1][2]; // z-1
+            interpreter->input(6)->data.f[0] = inputs[0][2]; // z-2
+            interpreter->input(7)->data.f[0] = inputs[2][2]; // z
+            interpreter->input(8)->data.f[0] = inputs[0][0]; // x-2
+
             TfLiteStatus invoke_status = interpreter->Invoke();
             if (invoke_status != kTfLiteOk) {
                 Serial.println("Invoke failed");
