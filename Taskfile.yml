@@ -22,6 +22,8 @@ tasks:
   arduino-accelerometer-upload:
     deps:
       - arduino-accelerometer-compile
+    sources:
+      - arduino/Accelerometer/build/**/Accelerometer.ino.*
     cmds:
       - |
          board=$(arduino-cli board list -b arduino:mbed_nano:nano33ble | sed -n 's/.*\(\/dev\/[^ ]*\).*/\1/p')

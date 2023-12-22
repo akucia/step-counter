@@ -23,8 +23,8 @@ class DeviceData:
     timestamp: float
     data_xyz: np.ndarray
     button_state: float
+    model_decision: float
     model_score: float
-    model_prediction: float
 
 
 class Source(abc.ABC):

@@ -59,8 +59,8 @@ void setup() {
     digitalWrite(LEDR, HIGH);
     digitalWrite(LEDG, HIGH);
     digitalWrite(LEDB, HIGH);
-    while (!Serial)
-        ;
+    //    while (!Serial)
+    //        ;
     Serial.println("Started");
 
     // Setting up bluetooth connection

@@ -124,7 +124,7 @@ async def read_data_from_source(source: Source):
         data_queue.put(data)
         print(
             f"Timestamp: {data.timestamp}, accelerometer data: {data.data_xyz}, "
-            f"button state: {data.button_state}, model decision: {data.model_prediction}, "
+            f"button state: {data.button_state}, model decision: {data.model_decision}, "
             f"model score: {data.model_score}"
         )
 
@@ -137,14 +137,14 @@ async def read_data_from_source(source: Source):
             )
         previous_button_state = data.button_state
 
-        if data.model_prediction and data.model_prediction != previous_predicted_state:
+        if data.model_decision and data.model_decision != previous_predicted_state:
             doc.add_next_tick_callback(
                 partial(
                     model_predictions.update,
                     text=f"predictions: {int(model_predictions.text.split(': ')[1]) + 1}",
                 )
             )
-        previous_predicted_state = data.model_prediction
+        previous_predicted_state = data.model_decision
 
         doc.add_next_tick_callback(
             partial(
@@ -154,7 +154,7 @@ async def read_data_from_source(source: Source):
                 z=data.data_xyz[2],
                 button_state=data.button_state,
                 button_pred_score=data.model_score,
-                button_pred=data.model_prediction,
+                button_pred=data.model_decision,
             )
         )
 
@@ -207,4 +207,4 @@ button = Button(label="Save data to file")
 button.on_event(ButtonClick, read_queue_and_save_data)
 
 doc.add_root(row(column(row(p1, p2), button), button_clicks, model_predictions))
-doc.add_next_tick_callback(use_dummy_source)
+doc.add_next_tick_callback(use_ble_source)
