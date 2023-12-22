@@ -56,11 +56,15 @@ stages:
     outs:
       - reports/predictions/steps/test_tflite/
   convert_tflite_to_c:
-    cmd: xxd -i models/dnn/tflite/model_quantized.tflite > models/dnn/tflite/model_quantized.h
+    cmd:
+      xxd -i models/dnn/tflite/model_quantized.tflite models/dnn/tflite/model_quantized.h && clang-format -i models/dnn/tflite/model_quantized.h && cp models/dnn/tflite/model_quantized.h arduino/Accelerometer/Model.h
     deps:
       - models/dnn/tflite/model_quantized.tflite
     outs:
-      - models/dnn/tflite/model_quantized.h
+      - models/dnn/tflite/model_quantized.h:
+            cache: false
+      - arduino/Accelerometer/Model.h:
+            cache: false
   evaluate:
     cmd: >
       python

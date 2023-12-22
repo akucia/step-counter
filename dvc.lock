@@ -163,14 +163,20 @@ stages:
       md5: 32cabfb53f4f7fade11dfedbbd3bbfdb
       size: 266
   convert_tflite_to_c:
-    cmd: xxd -i models/dnn/tflite/model_quantized.tflite > models/dnn/tflite/model_quantized.h
+    cmd: xxd -i models/dnn/tflite/model_quantized.tflite models/dnn/tflite/model_quantized.h
+      && clang-format -i models/dnn/tflite/model_quantized.h && cp models/dnn/tflite/model_quantized.h
+      arduino/Accelerometer/Model.h
     deps:
     - path: models/dnn/tflite/model_quantized.tflite
       hash: md5
       md5: 043151c1fc623d5d139f63e6e631b6bb
       size: 17312
     outs:
+    - path: arduino/Accelerometer/Model.h
+      hash: md5
+      md5: dad4097794bd03005dd19043f2f7422c
+      size: 107649
     - path: models/dnn/tflite/model_quantized.h
       hash: md5
-      md5: 1f8dd9bee5d32a1032a73b487b4ae26a
-      size: 106888
+      md5: dad4097794bd03005dd19043f2f7422c
+      size: 107649
