@@ -9,10 +9,16 @@ from bleak import BleakScanner
 from bokeh.document import without_document_lock
 from bokeh.events import ButtonClick
 from bokeh.layouts import column, row
-from bokeh.models import Button, ColumnDataSource
+from bokeh.models import Button, ColumnDataSource, Div
 from bokeh.plotting import curdoc, figure
 
-from step_counter.data_sources import BLESource, DummySource, MockSource, Source
+from step_counter.data_sources import (
+    BLESource,
+    DeviceData,
+    DummySource,
+    MockSource,
+    Source,
+)
 from step_counter.models.dnn_keras.predict import TFLiteDNNPredictor
 
 model_save_path = Path("models/dnn/tflite/model_quantized.tflite")
@@ -28,6 +34,9 @@ source_z = ColumnDataSource(data=dict(x=[0], y=[0]))
 source_button = ColumnDataSource(data=dict(x=[0], y=[0]))
 source_button_score = ColumnDataSource(data=dict(x=[0], y=[0]))
 source_button_pred = ColumnDataSource(data=dict(x=[0], y=[0]))
+
+button_clicks = Div(text="clicks: 0", render_as_text=True)
+model_predictions = Div(text="predictions: 0", render_as_text=True)
 
 
 doc = curdoc()
@@ -92,9 +101,15 @@ def read_queue_and_save_data():
     counter = 0
     while True:
         try:
-            timestamp, data = data_queue.get_nowait()
+            data: DeviceData = data_queue.get_nowait()
             with open(filename, "a") as f:
-                print(timestamp, *data, sep=",", file=f)
+                print(
+                    data.timestamp,
+                    *data.data_xyz,
+                    data.button_state,
+                    sep=",",
+                    file=f,
+                )
             counter += 1
         except queue.Empty:
             print(f"Queue empty, read {counter} items")
@@ -103,27 +118,43 @@ def read_queue_and_save_data():
 
 @without_document_lock
 async def read_data_from_source(source: Source):
-    async for timestamp, accelerometer_data, button_data, model_decision, model_score in source.read_data():
-        data_queue.put((timestamp, accelerometer_data))
+    previous_button_state = 0.0
+    previous_predicted_state = 0.0
+    async for data in source.read_data():
+        data_queue.put(data)
         print(
-            f"Timestamp: {timestamp}, accelerometer data: {accelerometer_data}, "
-            f"button state: {button_data}, model decision: {model_decision}, model score: {model_score}"
+            f"Timestamp: {data.timestamp}, accelerometer data: {data.data_xyz}, "
+            f"button state: {data.button_state}, model decision: {data.model_prediction}, "
+            f"model score: {data.model_score}"
         )
 
-        # button_pred, button_pred_score = model.predict(
-        #     accelerometer_data[0], accelerometer_data[1], accelerometer_data[2]
-        # )
-        # print(f"Button state: {button_data}, prediction: {button_pred_score:.3f}")
+        if data.button_state and data.button_state != previous_button_state:
+            doc.add_next_tick_callback(
+                partial(
+                    button_clicks.update,
+                    text=f"clicks: {int(button_clicks.text.split(': ')[1]) + 1}",
+                )
+            )
+        previous_button_state = data.button_state
+
+        if data.model_prediction and data.model_prediction != previous_predicted_state:
+            doc.add_next_tick_callback(
+                partial(
+                    model_predictions.update,
+                    text=f"predictions: {int(model_predictions.text.split(': ')[1]) + 1}",
+                )
+            )
+        previous_predicted_state = data.model_prediction
 
         doc.add_next_tick_callback(
             partial(
                 update_plot,
-                x=accelerometer_data[0],
-                y=accelerometer_data[1],
-                z=accelerometer_data[2],
-                button_state=button_data,
-                button_pred_score=model_score,
-                button_pred=model_decision,
+                x=data.data_xyz[0],
+                y=data.data_xyz[1],
+                z=data.data_xyz[2],
+                button_state=data.button_state,
+                button_pred_score=data.model_score,
+                button_pred=data.model_prediction,
             )
         )
 
@@ -175,7 +206,5 @@ button = Button(label="Save data to file")
 
 button.on_event(ButtonClick, read_queue_and_save_data)
 
-doc.add_root(column(row(p1, p2), button))
-doc.add_next_tick_callback(use_ble_source)
-
-# TODO add button to start recording to file
+doc.add_root(row(column(row(p1, p2), button), button_clicks, model_predictions))
+doc.add_next_tick_callback(use_dummy_source)

@@ -8,18 +8,30 @@ import abc
 import asyncio
 import itertools
 import time
+from dataclasses import dataclass
 from pathlib import Path
-from typing import AsyncIterable, Tuple, Union
+from typing import AsyncIterable, Union
 
 import numpy as np
 from bleak import BleakClient, BLEDevice
+
+
+@dataclass(frozen=True)
+class DeviceData:
+    """Dataclass for storing data from the device."""
+
+    timestamp: float
+    data_xyz: np.ndarray
+    button_state: float
+    model_score: float
+    model_prediction: float
 
 
 class Source(abc.ABC):
     """Abstract base class for accelerator data sources."""
 
     @abc.abstractmethod
-    def read_data(self) -> AsyncIterable[Tuple[float, np.ndarray, float]]:
+    def read_data(self) -> AsyncIterable[DeviceData]:
         """Read data from the source."""
         pass
 
@@ -36,7 +48,7 @@ class DummySource(Source):
         """
         np.random.seed(seed)
 
-    async def read_data(self) -> AsyncIterable[Tuple[float, np.ndarray, float]]:
+    async def read_data(self) -> AsyncIterable[DeviceData]:
         """Generate random data indefinitely."""
         while True:
             await asyncio.sleep(0.05)
@@ -46,7 +58,7 @@ class DummySource(Source):
                 data_button = 1.0
             else:
                 data_button = 0.0
-            yield timestamp, data_xyz, data_button
+            yield DeviceData(timestamp, data_xyz, data_button, 0, 0)
 
 
 class MockSource(Source):
@@ -62,7 +74,7 @@ class MockSource(Source):
         """
         self.file = file
 
-    async def read_data(self) -> AsyncIterable[Tuple[float, np.ndarray, float]]:
+    async def read_data(self) -> AsyncIterable[DeviceData]:
         """Read data from the file indefinitely."""
 
         with open(self.file) as f:
@@ -76,7 +88,9 @@ class MockSource(Source):
             timestamp, x, y, z, button_state = line.split(",")
             timestamp = float(timestamp)
             data = np.array([float(x), float(y), float(z)])
-            yield timestamp, data.astype(np.float32), float(button_state)
+            yield DeviceData(
+                timestamp, data.astype(np.float32), float(button_state), 0, 0
+            )
             time_diff = timestamp - previous_timestamp
             previous_timestamp = timestamp
             # pause exact amount of time between two timestamps read from file to simulate real-time data
@@ -90,13 +104,17 @@ class BLESource(Source):
         self.device = device
         self.service_uuid = service_uuid
 
-    async def read_data(self) -> AsyncIterable[Tuple[float, np.ndarray, float]]:
+    async def read_data(self) -> AsyncIterable[DeviceData]:
         """Read data from the BLE device indefinitely."""
         async with BleakClient(self.device.address) as client:
             while client.is_connected:
                 bytes_data = await client.read_gatt_char(self.service_uuid)
                 timestamp = time.time()
                 decoded_data = np.frombuffer(bytes_data, dtype=np.float32)
-                yield float(timestamp), decoded_data[0:3], float(
-                    decoded_data[3]
-                ), decoded_data[4], decoded_data[5]
+                yield DeviceData(
+                    float(timestamp),
+                    decoded_data[0:3],
+                    float(decoded_data[3]),
+                    float(decoded_data[4]),
+                    float(decoded_data[5]),
+                )
