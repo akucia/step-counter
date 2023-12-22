@@ -7,6 +7,12 @@
         <img src="coverage_badge.svg" /></a>
 </p>
 
+
+# Setting up TFlite for Arduino
+Follow the steps [from this repository](https://github.com/tensorflow/tflite-micro-arduino-examples#github)
+Clone examples repository to arduino library folder to make it available in Arduino IDE and include TensorFlowLite.h in your sketch.
+
+
 # Metrics
 | Path                             | num_samples   | test.f1-score_macro   | test.precision_macro   | test.predicted_step_count   | test.recall_macro   | test.roc_auc   | test.support_macro   | test.target_step_count   | train.accuracy   | train.f1_macro   | train.precision_macro   | train.recall_macro   | validation.accuracy   | validation.f1_macro   | validation.precision_macro   | validation.recall_macro   | validation.threshold_mean   | validation.threshold_std   |
 |----------------------------------|---------------|-----------------------|------------------------|-----------------------------|---------------------|----------------|----------------------|--------------------------|------------------|------------------|-------------------------|----------------------|-----------------------|-----------------------|------------------------------|---------------------------|-----------------------------|----------------------------|
