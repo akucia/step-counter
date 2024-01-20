@@ -5,7 +5,7 @@ import os
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, Optional, Tuple
 
 import click
 import keras
@@ -24,18 +24,6 @@ from sklearn.utils import class_weight
 from tqdm import tqdm
 
 from step_counter.datasets import load_data_as_dataframe
-
-features = [
-    "x",
-    "y",
-    "z",
-    "x-1",
-    "y-1",
-    "z-1",
-    "x-2",
-    "y-2",
-    "z-2",
-]
 
 
 def dataframes_to_dataset(X: pd.DataFrame, y: pd.DataFrame) -> tf.data.Dataset:
@@ -98,6 +86,37 @@ def encode_numerical_feature(
     default=150,
     help="Number of epochs for training",
 )
+@click.option(
+    "--dropout",
+    "-d",
+    "dropout",
+    type=float,
+    default=0.5,
+    help="Dropout rate for training",
+)
+@click.option(
+    "--units",
+    "-u",
+    "units",
+    type=int,
+    default=100,
+    help="Number of units in a single layer",
+)
+@click.option(
+    "--num-layers",
+    "-nl",
+    "num_layers",
+    type=int,
+    default=1,
+    help="Number of layers",
+)
+@click.option(
+    "--augment-data",
+    "-a",
+    "augment_data",
+    is_flag=True,
+    help="Whether to augment data",
+)
 def main(
     data_path: Path,
     model_save_path: Path,
@@ -106,6 +125,10 @@ def main(
     kfolds: int,
     batch_size: int,
     epochs: int,
+    dropout: float,
+    units: int,
+    num_layers: int,
+    augment_data: bool,
 ):
     """
         Train and save logistic regression model
@@ -119,6 +142,7 @@ def main(
 
     # load data
     data = load_data_as_dataframe(data_path)
+    data = data.astype(np.float32)
 
     X = data[["x", "y", "z"]]
     # add shift columns
@@ -161,6 +185,10 @@ def main(
                         seed,
                         batch_size,
                         epochs,
+                        dropout,
+                        units,
+                        num_layers,
+                        augment_data,
                     )
                 )
         print(f"Training {len(futures)} models...")
@@ -211,7 +239,9 @@ def main(
 
     # re-train the model on the entire training set
     print("Training model on entire training set...")
-    _, _, model = _train_model(X, X, y, y, seed, batch_size, epochs)
+    _, _, model = _train_model(
+        X, X, y, y, seed, batch_size, epochs, dropout, units, num_layers, augment_data
+    )
 
     # add layer with threshold to the model
     x = model(model.inputs)
@@ -258,6 +288,49 @@ def _find_optimal_threshold(
     return float(best_threshold)
 
 
+def augment_random_rotation(
+    features: Dict[str, tf.Tensor], label: tf.Tensor
+) -> Tuple[Dict[str, tf.Tensor], tf.Tensor]:
+    angle_x = tf.random.uniform(shape=(), minval=0, maxval=2 * np.pi)
+    Rx = tf.stack(
+        [
+            [1, 0, 0],
+            [0, tf.cos(angle_x), -tf.sin(angle_x)],
+            [0, tf.sin(angle_x), tf.cos(angle_x)],
+        ]
+    )
+    angle_y = tf.random.uniform(shape=(), minval=0, maxval=2 * np.pi)
+    Ry = tf.stack(
+        [
+            [tf.cos(angle_y), 0, tf.sin(angle_y)],
+            [0, 1, 0],
+            [-tf.sin(angle_y), 0, tf.cos(angle_y)],
+        ]
+    )
+
+    angle_z = tf.random.uniform(shape=(), minval=0, maxval=2 * np.pi)
+    Rz = tf.stack(
+        [
+            [tf.cos(angle_z), -tf.sin(angle_z), 0],
+            [tf.sin(angle_z), tf.cos(angle_z), 0],
+            [0, 0, 1],
+        ]
+    )
+
+    R = tf.matmul(Rx, tf.matmul(Ry, Rz))
+
+    for lag in ["", "-1", "-2"]:
+        vector = tf.stack(
+            [features["x" + lag], features["y" + lag], features["z" + lag]]
+        )
+        vector = tf.matmul(R, vector)
+        features["x" + lag] = vector[0, :]
+        features["y" + lag] = vector[1, :]
+        features["z" + lag] = vector[2, :]
+
+    return features, label
+
+
 def _train_model(
     X_test: pd.DataFrame,
     X_train: pd.DataFrame,
@@ -266,6 +339,10 @@ def _train_model(
     seed: int,
     batch_size: int,
     epochs: int,
+    dropout: float = 0.5,
+    units: int = 100,
+    num_layers: int = 1,
+    augment_data: bool = False,
 ) -> Tuple[Dict[str, Dict[str, float]], float, keras.Model]:
     """Trains and evaluates a model
 
@@ -277,6 +354,10 @@ def _train_model(
         seed (int): random seed
         batch_size (int): batch size
         epochs (int): number of epochs
+        dropout (float, optional): dropout rate. Defaults to 0.5.
+        units (int, optional): number of units in a single layer. Defaults to 100.
+        num_layers (int, optional): number of layers. Defaults to 1.
+        augment_data (bool, optional): whether to augment data. Defaults to False.
 
     """
     # TODO better typing for return value
@@ -287,10 +368,19 @@ def _train_model(
     }
     train_ds = dataframes_to_dataset(X_train, y_train)
     val_ds = dataframes_to_dataset(X_test, y_test)
+
     train_ds = train_ds.batch(batch_size)
     val_ds = val_ds.batch(batch_size)
 
-    model = _build_keras_model(train_ds, features)
+    # augmentations
+    if augment_data:
+        train_ds = train_ds.map(
+            augment_random_rotation, num_parallel_calls=tf.data.AUTOTUNE
+        )
+
+    model = _build_keras_model(
+        train_ds, dropout=dropout, units=units, num_layers=num_layers
+    )
     classes = np.unique(y_train)
     if (classes == np.array([0])).all():
         cw = {0: 1, 1: 1}
@@ -343,8 +433,10 @@ def _predict_on_dataset(
     y_pred = []
     for batch_x, batch_y in dataset:
         y_true.append(batch_y.numpy())
-        y_pred.append(model.predict(batch_x, verbose=0))
-    y_pred = np.concatenate(y_pred)
+        predictions = model.predict(batch_x, verbose=0)
+        y_pred.append(predictions)
+
+    y_pred = np.concatenate(y_pred).reshape(-1, 1)
     if threshold is not None:
         y_pred = (y_pred > threshold).astype(float)
 
@@ -354,7 +446,6 @@ def _predict_on_dataset(
 
 def _build_keras_model(
     train_ds: tf.data.Dataset,
-    features: List[str],
     units: int = 100,
     num_layers: int = 1,
     dropout: float = 0.5,
@@ -365,11 +456,13 @@ def _build_keras_model(
     x_input = []
     encoded_features = {}
 
-    for header in features:
-        numeric_col = tf.keras.Input(shape=(1,), name=header)
-        encoded_feature = encode_numerical_feature(numeric_col, header, train_ds)
-        x_input.append(numeric_col)
-        encoded_features[header] = encoded_feature
+    for lag in ["", "-1", "-2"]:
+        for dim in ["x", "y", "z"]:
+            header = dim + lag
+            numeric_col = tf.keras.Input(shape=(1,), name=header)
+            encoded_feature = encode_numerical_feature(numeric_col, header, train_ds)
+            x_input.append(numeric_col)
+            encoded_features[header] = encoded_feature
 
     # add magnitude features as sqrt (x**2 + y**2 + z**2)
     encoded_features["magnitude"] = layers.Lambda(
@@ -396,7 +489,8 @@ def _build_keras_model(
     x = all_features
     for _ in range(num_layers):
         x = layers.Dense(units, activation="relu")(x)
-        x = layers.Dropout(dropout)(x)
+        if dropout > 0:
+            x = layers.Dropout(dropout)(x)
     output = layers.Dense(1, activation="sigmoid")(x)
     model = tf.keras.Model(x_input, output)
     optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)

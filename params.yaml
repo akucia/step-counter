@@ -1,1 +1,5 @@
 seed: 42
+epochs: 200
+dropout: 0.0
+units: 100
+num_layers: 1

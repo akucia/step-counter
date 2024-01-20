@@ -7,6 +7,10 @@ stages:
       models/dnn/base_export
       reports/metrics/train.json
       --seed=${seed}
+      --epochs=${epochs}
+      --dropout=${dropout}
+      --units=${units}
+      --num-layers=${num_layers}
     deps:
       - data/steps/train/
     outs:
