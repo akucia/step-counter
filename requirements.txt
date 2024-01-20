@@ -4,10 +4,22 @@
 #
 #    pip-compile --output-file=requirements.txt pyproject.toml
 #
+absl-py==2.1.0
+    # via
+    #   tensorboard
+    #   tensorflow
+astunparse==1.6.3
+    # via tensorflow
 bleak==0.20.2
     # via step-counter (pyproject.toml)
 bokeh==3.2.2
     # via step-counter (pyproject.toml)
+cachetools==5.3.2
+    # via google-auth
+certifi==2023.11.17
+    # via requests
+charset-normalizer==3.3.2
+    # via requests
 click==8.1.7
     # via step-counter (pyproject.toml)
 contourpy==1.1.0
@@ -18,41 +30,89 @@ coverage[toml]==7.3.0
     # via pytest-cov
 cycler==0.11.0
     # via matplotlib
+flatbuffers==23.5.26
+    # via tensorflow
 fonttools==4.42.1
     # via matplotlib
+gast==0.5.4
+    # via tensorflow
+google-auth==2.26.2
+    # via
+    #   google-auth-oauthlib
+    #   tensorboard
+google-auth-oauthlib==1.0.0
+    # via tensorboard
+google-pasta==0.2.0
+    # via tensorflow
+grpcio==1.60.0
+    # via
+    #   tensorboard
+    #   tensorflow
+h5py==3.10.0
+    # via tensorflow
+idna==3.6
+    # via requests
 iniconfig==2.0.0
     # via pytest
 jinja2==3.1.2
     # via bokeh
 joblib==1.3.2
     # via scikit-learn
+keras==2.14.0
+    # via
+    #   keras-tuner
+    #   step-counter (pyproject.toml)
+    #   tensorflow
+keras-tuner==1.4.6
+    # via step-counter (pyproject.toml)
 kiwisolver==1.4.5
     # via matplotlib
+kt-legacy==1.0.5
+    # via keras-tuner
+libclang==16.0.6
+    # via tensorflow
+markdown==3.5.2
+    # via tensorboard
 markdown-it-py==3.0.0
     # via rich
 markupsafe==2.1.3
-    # via jinja2
+    # via
+    #   jinja2
+    #   werkzeug
 matplotlib==3.7.2
     # via step-counter (pyproject.toml)
 mdurl==0.1.2
     # via markdown-it-py
+ml-dtypes==0.2.0
+    # via tensorflow
 more-itertools==10.1.0
     # via step-counter (pyproject.toml)
 numpy==1.25.2
     # via
     #   bokeh
     #   contourpy
+    #   h5py
     #   matplotlib
+    #   ml-dtypes
+    #   opt-einsum
     #   pandas
     #   scikit-learn
     #   scipy
     #   step-counter (pyproject.toml)
+    #   tensorboard
+    #   tensorflow
+oauthlib==3.2.2
+    # via requests-oauthlib
+opt-einsum==3.3.0
+    # via tensorflow
 packaging==23.1
     # via
     #   bokeh
+    #   keras-tuner
     #   matplotlib
     #   pytest
     #   pytest-sugar
+    #   tensorflow
 pandas==2.0.3
     # via
     #   bokeh
@@ -64,6 +124,16 @@ pillow==10.0.1
     #   step-counter (pyproject.toml)
 pluggy==1.3.0
     # via pytest
+protobuf==4.25.2
+    # via
+    #   tensorboard
+    #   tensorflow
+pyasn1==0.5.1
+    # via
+    #   pyasn1-modules
+    #   rsa
+pyasn1-modules==0.3.0
+    # via google-auth
 pygments==2.16.1
     # via rich
 pyobjc-core==9.2
@@ -105,21 +175,60 @@ pytz==2023.3
     # via pandas
 pyyaml==6.0.1
     # via bokeh
+requests==2.31.0
+    # via
+    #   keras-tuner
+    #   requests-oauthlib
+    #   tensorboard
+requests-oauthlib==1.3.1
+    # via google-auth-oauthlib
 rich==13.5.2
     # via step-counter (pyproject.toml)
+rsa==4.9
+    # via google-auth
 scikit-learn==1.3.0
     # via step-counter (pyproject.toml)
 scipy==1.11.2
     # via scikit-learn
 six==1.16.0
-    # via python-dateutil
+    # via
+    #   astunparse
+    #   google-pasta
+    #   python-dateutil
+    #   tensorboard
+    #   tensorflow
+tensorboard==2.14.1
+    # via tensorflow
+tensorboard-data-server==0.7.2
+    # via tensorboard
+tensorflow==2.14.0
+    # via step-counter (pyproject.toml)
+tensorflow-estimator==2.14.0
+    # via tensorflow
+tensorflow-io-gcs-filesystem==0.35.0
+    # via tensorflow
 termcolor==2.4.0
-    # via pytest-sugar
+    # via
+    #   pytest-sugar
+    #   tensorflow
 threadpoolctl==3.2.0
     # via scikit-learn
 tornado==6.3.3
     # via bokeh
+typing-extensions==4.9.0
+    # via tensorflow
 tzdata==2023.3
     # via pandas
+urllib3==2.1.0
+    # via requests
+werkzeug==3.0.1
+    # via tensorboard
+wheel==0.42.0
+    # via astunparse
+wrapt==1.14.1
+    # via tensorflow
 xyzservices==2023.7.0
     # via bokeh
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools

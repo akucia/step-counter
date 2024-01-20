@@ -14,3 +14,6 @@ click
 rich
 Pillow==10.0.1
 more-itertools==10.1.0
+keras==2.14.0
+tensorflow==2.14.0
+keras-tuner

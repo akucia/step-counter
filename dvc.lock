@@ -21,7 +21,7 @@ stages:
       nfiles: 6
     - path: reports/metrics/train.json
       hash: md5
-      md5: 1db1c0ffc76537f10010e9dd2200ef57
+      md5: b85504dd61cd88ea119f169155c22b03
       size: 508
   predict_test:
     cmd: "python src/step_counter/models/dnn_keras/predict.py data/steps/test/ models/dnn/base_export
@@ -48,7 +48,7 @@ stages:
     deps:
     - path: reports
       hash: md5
-      md5: 9edfa8bcd16046a975b28a29b8ba56ae.dir
+      md5: 9701be830faaaf3e8663c31db2c32cb0.dir
       size: 483108
       nfiles: 18
     - path: update-metrics-table-and-graph.py
