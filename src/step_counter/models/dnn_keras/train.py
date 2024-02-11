@@ -117,6 +117,14 @@ def encode_numerical_feature(
     is_flag=True,
     help="Whether to augment data",
 )
+@click.option(
+    "--learning-rate",
+    "-lr",
+    "learning_rate",
+    type=float,
+    default=5e-3,
+    help="Learning rate",
+)
 def main(
     data_path: Path,
     model_save_path: Path,
@@ -129,6 +137,7 @@ def main(
     units: int,
     num_layers: int,
     augment_data: bool,
+    learning_rate: float,
 ):
     """
         Train and save logistic regression model
@@ -189,6 +198,7 @@ def main(
                         units,
                         num_layers,
                         augment_data,
+                        learning_rate,
                     )
                 )
         print(f"Training {len(futures)} models...")
@@ -240,7 +250,18 @@ def main(
     # re-train the model on the entire training set
     print("Training model on entire training set...")
     _, _, model = _train_model(
-        X, X, y, y, seed, batch_size, epochs, dropout, units, num_layers, augment_data
+        X,
+        X,
+        y,
+        y,
+        seed,
+        batch_size,
+        epochs,
+        dropout,
+        units,
+        num_layers,
+        augment_data,
+        learning_rate,
     )
 
     # add layer with threshold to the model
@@ -343,6 +364,7 @@ def _train_model(
     units: int = 100,
     num_layers: int = 1,
     augment_data: bool = False,
+    learning_rate=5e-3,
 ) -> Tuple[Dict[str, Dict[str, float]], float, keras.Model]:
     """Trains and evaluates a model
 
@@ -379,7 +401,11 @@ def _train_model(
         )
 
     model = _build_keras_model(
-        train_ds, dropout=dropout, units=units, num_layers=num_layers
+        train_ds,
+        dropout=dropout,
+        units=units,
+        num_layers=num_layers,
+        learning_rate=learning_rate,
     )
     classes = np.unique(y_train)
     if (classes == np.array([0])).all():
